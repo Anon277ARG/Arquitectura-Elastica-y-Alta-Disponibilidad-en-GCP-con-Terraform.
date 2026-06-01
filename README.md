@@ -13,3 +13,4 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
 ### nota de diseño (Arquitectura stateless)
 esta primera version fue diseñada de forma intencional con una arquitectura stateless para enfocarnos unica y puramente en el computo y la arquitectura, en una siguiente version revisaremos las bases de datos y granularidad de datos.
 
+
