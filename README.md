@@ -1,6 +1,6 @@
 # Arquitectura Elastica y Alta Disponibilidad en GCP con Terraform
 ## Fase 1 computo y redes
-Este repositorio contiene los codigos en terraform para desplegat una arquitectura elastica en Google CLoud Computing (GCP) el diseño esta enfocado en aislar la capa de computo del acceso publico y garantizar el escalado automatico ante picos de demanda.
+Este repositorio contiene los codigos en terraform para desplegar una arquitectura elastica en Google CLoud Computing (GCP) el diseño esta enfocado en aislar la capa de computo del acceso publico y garantizar el escalado automatico ante picos de demanda.
 
 ## objetivos
 El objetivo es crear una arquitectura elastica, escalable y funcional
@@ -15,11 +15,18 @@ esta primera version fue diseñada de forma intencional con una arquitectura sta
 
 ### componentes de la arquitectura actual
 - Load Balancer funciona como acceso publico a nuestra red.
+- firewall con sus correspondientes tags
 - red VPC donde vive toda nuestra arquitectura.
 - Sub red proxy para garantizar el funcionamiento de el load balancer.
 - Subnet donde viven nuestras VMs.
 - Manage instance group para el control de las VMs.
 - instance template para la creacion de las VMs
--
+- autoscaler con politicas de uso de cpu
+- auto healing
+- cloud router para garantizar el funcionamiento del cloud nat
+- cloud nat para garantizar que las nuevas VMs tengan todas las dependencias necesarias para funciona.
+
+## Componentes
+
 
 
