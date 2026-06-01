@@ -3,7 +3,7 @@
 Este repositorio contiene los codigos en terraform para desplegat una arquitectura elastica en Google CLoud Computing (GCP) el diseño esta enfocado en aislar la capa de computo del acceso publico y garantizar el escalado automatico ante picos de demanda.
 
 ## componentes base de la arquitectura  
-
-
-
+<br>
+<br>
+<br>
 **elasticidad avanzada**
