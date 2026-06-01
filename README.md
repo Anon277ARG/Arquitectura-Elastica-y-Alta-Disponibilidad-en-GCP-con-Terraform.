@@ -1,3 +1,5 @@
 # Arquitectura Elastica y Alta Disponibilidad en GCP con Terraform
-## Fase de redes y computo
-arquitectura elastica con Autoscaling, autohealing y load balancing, back end privado, cloud nat para actualizaciones en terraform esta es una primera version si bases de datos y sin IAM para usuarios
+## Fase 1 computo y redes
+Este repositorio contiene los codigos en terraform para desplegat una arquitectura elastica en Google CLoud Computing (GCP) el diseño esta enfocado en aislar la capa de computo del acceso publico y garantizar el escalado automatico ante picos de demanda.
+<br>
+##componentes base de la arquitectura
