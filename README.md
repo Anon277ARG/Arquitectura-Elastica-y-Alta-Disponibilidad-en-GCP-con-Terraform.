@@ -13,4 +13,13 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
 ### nota de diseño (Arquitectura stateless)
 esta primera version fue diseñada de forma intencional con una arquitectura stateless para enfocarnos unica y puramente en el computo y la arquitectura, en una siguiente version revisaremos las bases de datos y granularidad de datos.
 
+### componentes de la arquitectura actual
+-Load Balancer funciona como acceso publico a nuestra red.
+-red VPC donde vive toda nuestra arquitectura.
+-Sub red proxy para garantizar el funcionamiento de el load balancer.
+-Subnet donde viven nuestras VMs.
+-Manage instance group para el control de las VMs.
+-instance template para la creacion de las VMs
+-
+
 
