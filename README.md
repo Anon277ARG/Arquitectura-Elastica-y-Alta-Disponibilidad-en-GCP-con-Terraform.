@@ -56,6 +56,7 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
 
 ### BackEnds
 - **MAnage Intance Group con la siguiente configuracion**
-  -con el nombre "itaca-mig"
-  -conectado al puerto 8080 configurado en la region santiago y un initial delay de 300 segundos de delay como health check policy
+        - con el nombre "itaca-mig
+        - conectado al puerto 8080
+        - configurado en la region santiago y un initial delay de 300 segundos de delay como health check policy
   - 
