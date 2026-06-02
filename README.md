@@ -53,3 +53,9 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
 - "22 y 35.235.240.0/20" para la conexions ssh
 - "8080 y 10.129.0.0/23" para la conexion del proxy con el load balancer
 - "8080 y 35.191.0.0/16, 130.211.0.0/22" para los health check
+
+### BackEnds
+- **MAnage Intance Group con la siguiente configuracion**
+  -con el nombre "itaca-mig"
+  -conectado al puerto 8080 configurado en la region santiago y un initial delay de 300 segundos de delay como health check policy
+  - 
