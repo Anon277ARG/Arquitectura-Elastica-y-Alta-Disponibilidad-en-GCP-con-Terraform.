@@ -79,6 +79,7 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
   ```
 - cloud nat para la traduccion de ips
   ```
+  resource "google_compute_router_nat" "itaca_nat" {
   name = "intaca-mig-updatenat"
   router = google_compute_router.itaca_router.name
   region = var.region
@@ -93,13 +94,60 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
   ```
 
 ### Firewall
-- reglas de firewall con el nombre "itaca-firewall, itaca-health-check, allow-ssh-itaca"
+- reglas de firewall con el nombre "itaca-firewall, itaca-health-check, allow-ssh-itaca" 
 - todas las reglas con el mismo tag para evitar confuciones "itaca-firewalls"
 #### abieros los puertos y las ips
 - "22 y 35.235.240.0/20" para la conexions ssh
 - "8080 y 10.129.0.0/23" para la conexion del proxy con el load balancer
 - "8080 y 35.191.0.0/16, 130.211.0.0/22" para los health check
+#### codigo de itaca-firewall
+```
+  resource "google_compute_firewall" "itaca_firewall" {
+  name    = "itaca-firewall"
+  network = google_compute_network.itaca_network.name
 
+  allow {
+    protocol = "tcp"
+    ports    = ["8080"]
+  }
+
+  source_ranges = ["10.129.0.0/23"]
+
+  target_tags = ["itaca-firewalls"]
+  }
+```
+#### codigo de itaca-health-check
+```
+resource "google_compute_firewall" "itaca_health_check" {
+  name    = "itaca-health-check"
+  network = google_compute_network.itaca_network.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["8080"]
+  }
+
+  source_ranges = ["35.191.0.0/16", "130.211.0.0/22"]
+
+  target_tags = ["itaca-firewalls"]
+}
+```
+#### codigo de allow-ssh-itaca
+```
+resource "google_compute_firewall" "allow_ssh_itaca" {
+  name        = "allow-ssh-itaca"
+  network     = google_compute_network.itaca_network.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+
+  source_ranges = ["35.235.240.0/20"]
+
+  target_tags = ["itaca-firewalls"]
+}
+```
 ### BackEnds
 #### MAnage Intance Group con la siguiente configuracion
 - con el nombre "itaca-mig
