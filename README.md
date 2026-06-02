@@ -10,8 +10,9 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
 - **distribucion de trafico** configuracion de un aplication load balancer para el balanceo de carga de solicitudes de red.<br>
 - **seguridad perimetral** diseño back end 100% aislado en una VPC custom. las instancias carecen de ip publica, con cloud nat para la descarga de actualizaciones de forma segura.<br>
 
-### notas de diseño (Arquitectura stateless)
+### notas de diseño 
 - esta primera version fue diseñada de forma intencional con una arquitectura stateless para enfocarnos unica y puramente en el computo y la arquitectura, en una siguiente version revisaremos las bases de datos y granularidad de datos.
+- Se optó por resources individuales en lugar de módulos por dos razones: control granular sobre cada decisión de diseño, y claridad didáctica, ya que cada bloque refleja explícitamente un componente real de la infraestructura, siendo esta la mejor decision para el aprendizaje.
 
 ## Diagrama de arquitectura visual
 <figure>
@@ -39,6 +40,13 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
 
 ### redes
 - red VPC privada con el nombre de "itaca-network" creada en Santiago, la unica configuracion relevante aca es que se desactivo la creacion automatica de subredes.
+  ```
+  resource "google_compute_network" "itaca_network" {#<-- Network configuration
+    name = "itaca-network"
+    routing_mode = "GLOBAL"
+    auto_create_subnetworks = false
+ }
+  ```
 - sub red con el nombre de "Itaca-subnet" dedicada a asegurar la privacidad de las VMs.
 - sub red proxy para asegurar la conexion entre el Load Balancer y la sub red de las VMs.
 - cloud router para el ruteo a la internet publica
