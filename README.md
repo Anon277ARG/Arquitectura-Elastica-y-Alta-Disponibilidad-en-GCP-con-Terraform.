@@ -48,9 +48,49 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
   }
   ```
 - sub red con el nombre de "Itaca-subnet" dedicada a asegurar la privacidad de las VMs.
+  ```
+  resource "google_compute_subnetwork" "itaca_subnet" {
+    name = "itaca-subnetwork"
+    region = var.region
+    ip_cidr_range = "10.42.0.0/24"
+    network = google_compute_network.itaca_network.id
+    private_ip_google_access = true
+  }
+  ```
 - sub red proxy para asegurar la conexion entre el Load Balancer y la sub red de las VMs.
+  ```
+  resource "google_compute_subnetwork" "itaca_proxy" {
+    name = "itaca-subnetwork-proxy"
+    region = var.region
+    ip_cidr_range = "10.129.0.0/23"
+    network = google_compute_network.itaca_network.id
+    purpose = "REGIONAL_MANAGED_PROXY"
+    role = "ACTIVE"
+  }
+  ```
 - cloud router para el ruteo a la internet publica
+  ```
+  resource "google_compute_router" "itaca_router" {
+    name = "itaca-router"
+    region = var.region
+    network = google_compute_network.itaca_network.id
+
+  }
+  ```
 - cloud nat para la traduccion de ips
+  ```
+  name = "intaca-mig-updatenat"
+  router = google_compute_router.itaca_router.name
+  region = var.region
+  nat_ip_allocate_option = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+
+    log_config {
+    enable = true
+    filter = "ALL"
+    } 
+  }
+  ```
 
 ### Firewall
 - reglas de firewall con el nombre "itaca-firewall, itaca-health-check, allow-ssh-itaca"
