@@ -57,7 +57,7 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
 - conectado al puerto 8080
 - configurado en la region santiago
 - initial delay de 300 segundos de delay como health check policy, para que las VMs se pongan en linea.
-### mig template con la siguiente configuracion
+#### mig template con la siguiente configuracion
 - nombre: virtual-machine-template
 - tag: "itaca-firewalls" para llamar a todos los firewalls
 - instancia: e2-Micro, no es necesario mas.
