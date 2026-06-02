@@ -46,7 +46,7 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
 ### Firewall
 - reglas de firewall con el nombre "itaca-firewall, itaca-health-check, allow-ssh-itaca"
 - todas las reglas con el mismo tag para evitar confuciones "itaca-firewalls"
-**abieros los puertos y las ips**
+#### abieros los puertos y las ips
 - "22 y 35.235.240.0/20" para la conexions ssh
 - "8080 y 10.129.0.0/23" para la conexion del proxy con el load balancer
 - "8080 y 35.191.0.0/16, 130.211.0.0/22" para los health check
@@ -65,12 +65,12 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
 - con la imagen de Debian 11
 - con la interfaz de red de itaca Network viviendo dentro de Itaca Subnet.
 - en la parte de meta data como Startup script que despliega la API para responder inmediatamente a los health checks, y lanza un proceso en segundo plano que, tras 300 segundos de delay, estresa la CPU al 100% para detonar el autoscaling, esto se definio asi ya que la instancia es una e2-Micro y al instalar las dependencias sube el uso de la CPU al 100% activando el autoscaler.
-**autoscaler con la siguiente configuracion**
+#### autoscaler con la siguiente configuracion
 - nombre: "autoscaler-itaca"
 - politica de autoscaling como 1 en replicas minimas y 6 en replicas maximas
 - un cooldown period de 180 segundos para asegurarnos la no creacion de replicas indeseadas.
 - como politica de replicacion se configuro uso de CPU al 80%.
-**servicio Back end con la siguiente configuracion**
+#### servicio Back end con la siguiente configuracion
 - nombre: "itaca-backend-service"
 - protocolo: HTTP
 - esquema de balanceo de carga como "External Managed" usando el nuevo esquema y dandole sentido a la subnet proxy
