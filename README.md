@@ -41,11 +41,11 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
 ### redes
 - red VPC privada con el nombre de "itaca-network" creada en Santiago, la unica configuracion relevante aca es que se desactivo la creacion automatica de subredes.
   ```
-  resource "google_compute_network" "itaca_network" {#<-- Network configuration
+  resource "google_compute_network" "itaca_network" {
     name = "itaca-network"
     routing_mode = "GLOBAL"
     auto_create_subnetworks = false
- }
+  }
   ```
 - sub red con el nombre de "Itaca-subnet" dedicada a asegurar la privacidad de las VMs.
 - sub red proxy para asegurar la conexion entre el Load Balancer y la sub red de las VMs.
