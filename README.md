@@ -52,7 +52,7 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
 - "8080 y 35.191.0.0/16, 130.211.0.0/22" para los health check
 
 ### BackEnds
-**MAnage Intance Group con la siguiente configuracion**
+#### MAnage Intance Group con la siguiente configuracion
 - con el nombre "itaca-mig
 - conectado al puerto 8080
 - configurado en la region santiago
