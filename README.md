@@ -27,10 +27,29 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
 - cloud router para garantizar el funcionamiento del cloud nat
 - cloud nat para garantizar que las nuevas VMs tengan todas las dependencias necesarias para funciona.
 
+## Diagrama de arquitectura visual
+
+  
+
+### requisitos
+- **cuenta de Google Cloud Computing GCP** - un proyecto de GCP creado y activo, cuenta de facturacion (BIlling) vinculada al proyecto.
+- **APIs Habilitadas** - la api de compute engine habilitada en el proyecto.
+- **Herramientas de linea de comandos (CLI) y terraform** - terraform instalado en tu entorno local, Gcloud instalado y autenticado.
+- **Permisos de IAM** - tener los permisos en GCP para crear redes y maquinas virtuales.
+
 ## Componentes
 
 ### redes
 - red VPC privada con el nombre de "itaca-network" creada en Santiago, la unica configuracion relevante aca es que se desactivo la creacion automatica de subredes.
 - sub red con el nombre de "Itaca-subnet" dedicada a asegurar la privacidad de las VMs.
 - sub red proxy para asegurar la conexion entre el Load Balancer y la sub red de las VMs.
+- cloud router para el ruteo a la internet publica
+- cloud nat para la traduccion de ips
 
+### Firewall
+- reglas de firewall con el nombre "itaca-firewall, itaca-health-check, allow-ssh-itaca"
+- todas las reglas con el mismo tag para evitar confuciones "itaca-firewalls"
+**abieros los puertos y las ips**
+- "22 y 35.235.240.0/20" para la conexions ssh
+- "8080 y 10.129.0.0/23" para la conexion del proxy con el load balancer
+- "8080 y 35.191.0.0/16, 130.211.0.0/22" para los health check
