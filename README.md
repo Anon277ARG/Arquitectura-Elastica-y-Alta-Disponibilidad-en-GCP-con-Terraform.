@@ -185,7 +185,76 @@ resource "google_compute_region_instance_group_manager" "mig" {
 - bloqueo de enrutamiento no autorizado para que las instancias actuen como nodos finales.
 - con la imagen de Debian 11
 - con la interfaz de red de itaca Network viviendo dentro de Itaca Subnet.
+**configuracion del template**
+```
+resource "google_compute_instance_template" "mig_template" {
+  name        = "virtual-machine-template"
+  description = "tose are thet templates used by the manage instance group."
+
+  tags = ["itaca-firewalls"]
+
+  labels = {
+    environment = "virtual_machine"
+  }
+
+  instance_description = "description assigned to instances"
+  machine_type         = "e2-micro"
+  can_ip_forward       = false
+
+  scheduling {
+    automatic_restart   = true
+    on_host_maintenance = "MIGRATE"
+  }
+  disk {
+    source_image      = "debian-cloud/debian-11"
+    auto_delete       = true
+    boot              = true
+  }
+  network_interface {
+    network = google_compute_network.itaca_network.id
+    subnetwork = google_compute_subnetwork.itaca_subnet.id
+  }
+```
 - en la parte de meta data como Startup script que despliega la API para responder inmediatamente a los health checks, y lanza un proceso en segundo plano que, tras 300 segundos de delay, estresa la CPU al 100% para detonar el autoscaling, esto se definio asi ya que la instancia es una e2-Micro y al instalar las dependencias sube el uso de la CPU al 100% activando el autoscaler.
+**script de inicio**
+  ```
+  metadata = {
+    "serial-port-enable" = "true"
+    "startup-script"     = <<-EOF
+      #!/bin/bash
+      apt-get update -y
+      apt-get install -y python3 python3-pip stress
+      pip3 install fastapi uvicorn
+
+      cat > /home/main.py << 'PYEOF'
+from fastapi import FastAPI
+import socket
+
+app = FastAPI()
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+@app.get("/")
+def home():
+    return {
+        "mensaje": "Instancia activa recibiendo trafico",
+        "maquina": socket.gethostname()
+    }
+PYEOF
+      cat > /home/estresar.sh << 'BASH_EOF'
+#!/bin/bash
+sleep 300
+stress --cpu $(nproc) --timeout 960
+BASH_EOF
+      chmod +x /home/estresar.sh
+      python3 -m uvicorn main:app --host 0.0.0.0 --port 8080 --app-dir /home &
+      nohup /home/estresar.sh > /home/estresar.log 2>&1 &
+    EOF
+  }
+}
+```
 #### autoscaler con la siguiente configuracion
 - nombre: "autoscaler-itaca"
 - politica de autoscaling como 1 en replicas minimas y 6 en replicas maximas
