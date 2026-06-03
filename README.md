@@ -259,12 +259,41 @@ BASH_EOF
 - politica de autoscaling como 1 en replicas minimas y 6 en replicas maximas
 - un cooldown period de 180 segundos para asegurarnos la no creacion de replicas indeseadas.
 - como politica de replicacion se configuro uso de CPU al 80%.
+```
+resource "google_compute_region_autoscaler" "itaca_autoscaler" { #<---autoscaler
+ name = "autoscaler-itaca"
+ region = var.region
+ target = google_compute_region_instance_group_manager.mig.id
+ autoscaling_policy {
+   min_replicas = 1
+   max_replicas = 6
+   cooldown_period = 180
+   cpu_utilization {
+     target = 0.8
+   }
+ }
+}
+```
 #### servicio Back end con la siguiente configuracion
 - nombre: "itaca-backend-service"
 - protocolo: HTTP
 - esquema de balanceo de carga como "External Managed" usando el nuevo esquema y dandole sentido a la subnet proxy
 - modo de Balanceo configurado en "Utilization" en base al uso
 - capacidad de scaler en 1.0
+```
+resource "google_compute_region_backend_service" "itaca_backend" { #<--- backend service
+  name = "itaca-backend-service"
+  region = var.region
+  protocol = "HTTP"
+  load_balancing_scheme = "EXTERNAL_MANAGED"
+  health_checks = [google_compute_region_health_check.itaca_check.id]
+  backend {
+    group = google_compute_region_instance_group_manager.mig.instance_group
+    balancing_mode = "UTILIZATION"
+    capacity_scaler = 1.0
+  }
+}
+```
 --- 
 ## colofon - Itaca
 durante el documento se lee el nombre "Itaca", Itaca hace alusion al hogar del protagonista de la Iliada de Homero Odiseo (Ὀδυσσεύς) en su nombre griego rey de Itaca donde su amada esposa Penelope(Πηνελόπεια) junto a su hijo Telemaco(Τηλέμαχος) lo esperaban ansiosamente dia a dia, los Romanos como es sabido en la historia tomaron mucho de la cultura griega y lo adaptaron Odiseo se volvio Ulysses, Penelope se volvio Penelopea y Telemaco se volvio Telemachus, todos conocemos la historia de la Iliada, no es lo importane, lo importante de esto es el origen etimologico de la palabra Penelope, este origen se discute, se cree que Pene viene "hilo, tejido, Trama" por otro lado Florencia viene del Latin, de alguna parte del centro de italia y significa "florida", "en flor" o "aquella que da frutos y florece". esto es importante por que al igual que penelope y odiseo, compartimos una vida de amor juntos, vos y maximo - mi telemaco que al igual que en la historia era solo un bebé cuando esta odisea empezó son mi motor, el hilo con el que hacemos fuerte nuestra Itaca, nuestro hogar de calor, seguridad y felicidad.
