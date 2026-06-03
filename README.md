@@ -170,13 +170,12 @@ resource "google_compute_region_instance_group_manager" "mig" {
    distribution_policy_zones = [
      "${var.region}-a",
      "${var.region}-b",
-   ]
+     ]
    auto_healing_policies {
      health_check = google_compute_region_health_check.itaca_check.id
      initial_delay_sec = 300
    }
   }
-
 ´´´
 #### mig template con la siguiente configuracion
 - nombre: virtual-machine-template
