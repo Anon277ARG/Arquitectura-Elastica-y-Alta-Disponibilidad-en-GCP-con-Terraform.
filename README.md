@@ -176,6 +176,7 @@ resource "google_compute_region_instance_group_manager" "mig" {
    initial_delay_sec = 300
  }
 }
+
 ´´´
 #### mig template con la siguiente configuracion
 - nombre: virtual-machine-template
