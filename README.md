@@ -154,6 +154,29 @@ resource "google_compute_firewall" "allow_ssh_itaca" {
 - conectado al puerto 8080
 - configurado en la region santiago
 - initial delay de 300 segundos de delay como health check policy, para que las VMs se pongan en linea.
+##### codigo del Manage Instance Group
+´´´
+resource "google_compute_region_instance_group_manager" "mig" { 
+ name = "itaca-mig"
+ base_instance_name = "itaca-vm-"
+ region = var.region
+ version {
+   instance_template = google_compute_instance_template.mig_template.id
+ }
+ named_port {
+    name = "http"
+    port = 8080
+  }
+ distribution_policy_zones = [
+   "${var.region}-a",
+   "${var.region}-b",
+ ]
+ auto_healing_policies {
+   health_check = google_compute_region_health_check.itaca_check.id
+   initial_delay_sec = 300
+ }
+}
+´´´
 #### mig template con la siguiente configuracion
 - nombre: virtual-machine-template
 - tag: "itaca-firewalls" para llamar a todos los firewalls
