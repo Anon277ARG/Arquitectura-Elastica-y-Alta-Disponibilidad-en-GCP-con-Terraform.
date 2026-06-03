@@ -217,7 +217,7 @@ resource "google_compute_instance_template" "mig_template" {
 ```
 - en la parte de meta data como Startup script que despliega la API para responder inmediatamente a los health checks, y lanza un proceso en segundo plano que, tras 300 segundos de delay, estresa la CPU al 100% para detonar el autoscaling, esto se definio asi ya que la instancia es una e2-Micro y al instalar las dependencias sube el uso de la CPU al 100% activando el autoscaler.
 **script de inicio**
-  ```
+```
   metadata = {
     "serial-port-enable" = "true"
     "startup-script"     = <<-EOF
