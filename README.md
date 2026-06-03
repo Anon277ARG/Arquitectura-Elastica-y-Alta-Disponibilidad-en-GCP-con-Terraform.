@@ -155,7 +155,7 @@ resource "google_compute_firewall" "allow_ssh_itaca" {
 - configurado en la region santiago
 - initial delay de 300 segundos de delay como health check policy, para que las VMs se pongan en linea.
 ##### codigo del Manage Instance Group
-´´´
+```
 resource "google_compute_region_instance_group_manager" "mig" { 
    name = "itaca-mig"
    base_instance_name = "itaca-vm-"
