@@ -351,9 +351,16 @@ Despues de clonar este repositorio, autenticarnos en los servicios de google, in
 <br>
 <br>
 <figure>
-  <img src="Imagenes/Terraform plan 16 recursos.jpeg" alt="terraform plan muestra 16 recursos">
-  <figcaption><em>Resultado de la ejecución de terraform plan indicando un total de 16 recursos cloud listos para ser añadidos a la infraestructura de GCP.</em></figcaption>
+  <img src="Imagenes/terraform apply.jpeg" alt="terraform apply">
+  <figcaption><em>Ejecución del comando terraform apply iniciando la creación ordenada y en paralelo de los recursos declarados en GCP.</em></figcaption>
 </figure>
+<br>
+<br>
+<figure>
+  <img src="Imagenes/terraform apply yes.jpeg" alt="terraform apply yes">
+  <figcaption><em>Confirmación manual (yes) durante el comando terraform apply para autorizar la creación real de 16 recursos en Google Cloud.</em></figcaption>
+</figure>
+<br>
 --- 
 ## colofon - Itaca
 durante el documento se lee el nombre "Itaca", Itaca hace alusion al hogar del protagonista de la Iliada de Homero Odiseo (Ὀδυσσεύς) en su nombre griego rey de Itaca donde su amada esposa Penelope(Πηνελόπεια) junto a su hijo Telemaco(Τηλέμαχος) lo esperaban ansiosamente dia a dia, los Romanos como es sabido en la historia tomaron mucho de la cultura griega y lo adaptaron Odiseo se volvio Ulysses, Penelope se volvio Penelopea y Telemaco se volvio Telemachus, todos conocemos la historia de la Iliada, no es lo importane, lo importante de esto es el origen etimologico de la palabra Penelope, este origen se discute, se cree que Pene viene de "hilo, tejido, Trama" por otro lado Florencia viene del Latin, de alguna parte del centro de italia y significa "florida", "en flor" o "aquella que da frutos y florece". esto es importante por que al igual que penelope y odiseo, compartimos una vida de amor juntos, vos y maximo - mi telemaco que al igual que en la historia era solo un bebé cuando esta odisea empezó son mi motor, el hilo con el que hacemos fuerte nuestra Itaca, nuestro hogar de calor, seguridad y felicidad.
