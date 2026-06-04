@@ -336,14 +336,20 @@ output "ip_publica_balanceador" {
 ### siguiendo las instrucciones descritas mas arriba vamos a desplegar esta arquitectura
 Despues de clonar este repositorio, autenticarnos en los servicios de google, iniciar terraform y solucionar incompatibilidades entre sistemas operativos, los pasos que se establecen son los siguientes
 - ```.\terraform.exe plan``` y ``` .\terraform.exe apply``` al usar estos comandos terraform le pregunta al proveedor si dichos recursos ya existen, trae el estado te la arquitectura actual y actualiza nuestro archivo ```terraform.tfstate``` documento que sirve como respaldo tambien crea un grafo de dependencias, terraform no puede crear una subred si primero no tiene una red.
+  <br>
+  <br>
 <figure>
   <img src="Imagenes/terraform plan.jpeg" alt="ejecucion de terraform plan">
   <figcaption><em>Ejecución del comando terraform plan en la terminal para previsualizar los cambios de infraestructura.</em></figcaption>
 </figure>
+<br>
+<br>
 <figure>
   <img src="Imagenes/Terraform plan 16 recursos.jpeg" alt="terraform plan muestra 16 recursos">
   <figcaption><em>Resultado de la ejecución de terraform plan indicando un total de 16 recursos cloud listos para ser añadidos a la infraestructura de GCP.</em></figcaption>
 </figure>
+<br>
+<br>
 <figure>
   <img src="Imagenes/Terraform plan 16 recursos.jpeg" alt="terraform plan muestra 16 recursos">
   <figcaption><em>Resultado de la ejecución de terraform plan indicando un total de 16 recursos cloud listos para ser añadidos a la infraestructura de GCP.</em></figcaption>
