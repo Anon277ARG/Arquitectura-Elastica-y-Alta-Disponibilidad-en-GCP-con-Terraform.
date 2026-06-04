@@ -306,6 +306,7 @@ resource "google_compute_forwarding_rule" "itaca-forwarding-rule" {
   port_range = "80"
   load_balancing_scheme = "EXTERNAL_MANAGED"
   network = google_compute_network.itaca_network.id
+  depends_on = [google_compute_subnetwork.itaca_proxy]
 }
 ```
 #### Target proxy como intermediario y procesador del tráfico
