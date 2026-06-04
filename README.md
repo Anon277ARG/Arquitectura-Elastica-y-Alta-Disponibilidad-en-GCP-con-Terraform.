@@ -261,7 +261,7 @@ BASH_EOF
 - un cooldown period de 180 segundos para asegurarnos la no creacion de replicas indeseadas.
 - como politica de replicacion se configuro uso de CPU al 80%.
 ```
-resource "google_compute_region_autoscaler" "itaca_autoscaler" { #<---autoscaler
+resource "google_compute_region_autoscaler" "itaca_autoscaler" {
  name = "autoscaler-itaca"
  region = var.region
  target = google_compute_region_instance_group_manager.mig.id
@@ -282,7 +282,7 @@ resource "google_compute_region_autoscaler" "itaca_autoscaler" { #<---autoscaler
 - modo de Balanceo configurado en "Utilization" en base al uso
 - capacidad de scaler en 1.0
 ```
-resource "google_compute_region_backend_service" "itaca_backend" { #<--- backend service
+resource "google_compute_region_backend_service" "itaca_backend" {
   name = "itaca-backend-service"
   region = var.region
   protocol = "HTTP"
@@ -298,13 +298,31 @@ resource "google_compute_region_backend_service" "itaca_backend" { #<--- backend
 ### Load Balancer
 #### Forwarding rule como puerta de acceso a la internet publica
 ```
-resource "google_compute_region_url_map" "itaca_url_map" { #<--- url map
+resource "google_compute_forwarding_rule" "itaca-forwarding-rule" { 
+  name = "itaca-forwarding-rule"
+  region = var.region 
+  target = google_compute_region_target_http_proxy.itaca_target_proxy.id
+  port_range = "80"
+  load_balancing_scheme = "EXTERNAL_MANAGED"
+  network = google_compute_network.itaca_network.id
+}
+```
+#### Target proxy como intermediario y procesador del tráfico
+```
+resource "google_compute_region_target_http_proxy" "itaca_target_proxy" { 
+  name = "itaca-target-proxy"
+  region = var.region
+  url_map = google_compute_region_url_map.itaca_url_map.id
+}
+```
+#### URL Map como como enrutador principal
+```
+resource "google_compute_region_url_map" "itaca_url_map" {
   name = "itaca-url-map"
   region = var.region
   default_service = google_compute_region_backend_service.itaca_backend.id
 } 
 ```
-#### Target proxy
 --- 
 ## colofon - Itaca
 durante el documento se lee el nombre "Itaca", Itaca hace alusion al hogar del protagonista de la Iliada de Homero Odiseo (Ὀδυσσεύς) en su nombre griego rey de Itaca donde su amada esposa Penelope(Πηνελόπεια) junto a su hijo Telemaco(Τηλέμαχος) lo esperaban ansiosamente dia a dia, los Romanos como es sabido en la historia tomaron mucho de la cultura griega y lo adaptaron Odiseo se volvio Ulysses, Penelope se volvio Penelopea y Telemaco se volvio Telemachus, todos conocemos la historia de la Iliada, no es lo importane, lo importante de esto es el origen etimologico de la palabra Penelope, este origen se discute, se cree que Pene viene "hilo, tejido, Trama" por otro lado Florencia viene del Latin, de alguna parte del centro de italia y significa "florida", "en flor" o "aquella que da frutos y florece". esto es importante por que al igual que penelope y odiseo, compartimos una vida de amor juntos, vos y maximo - mi telemaco que al igual que en la historia era solo un bebé cuando esta odisea empezó son mi motor, el hilo con el que hacemos fuerte nuestra Itaca, nuestro hogar de calor, seguridad y felicidad.
