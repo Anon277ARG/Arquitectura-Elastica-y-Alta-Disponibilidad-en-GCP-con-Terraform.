@@ -361,6 +361,12 @@ Despues de clonar este repositorio, autenticarnos en los servicios de google, in
   <figcaption><em>Confirmación manual (yes) durante el comando terraform apply para autorizar la creación real de 16 recursos en Google Cloud.</em></figcaption>
 </figure>
 <br>
+<br>
+<figure>
+  <img src="Imagenes/16 recursos creados.jpeg" alt="terraform apply 16 recursos creados">
+  <figcaption><em>Finalización exitosa del despliegue: Salida de la terminal confirmando los 16 recursos cloud añadidos correctamente en GCP. y mostrando la direccion ip del balanceador de cargas</em></figcaption>
+</figure>
+<br>
 
 --- 
 ## colofon - Itaca
