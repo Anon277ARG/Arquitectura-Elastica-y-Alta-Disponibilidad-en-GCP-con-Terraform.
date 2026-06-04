@@ -296,8 +296,14 @@ resource "google_compute_region_backend_service" "itaca_backend" { #<--- backend
 }
 ```
 ### Load Balancer
-#### 
-- 
+#### Forwarding rule como puerta de acceso a la internet publica
+´´´
+resource "google_compute_region_url_map" "itaca_url_map" { #<--- url map
+  name = "itaca-url-map"
+  region = var.region
+  default_service = google_compute_region_backend_service.itaca_backend.id
+} 
+´´´
 --- 
 ## colofon - Itaca
 durante el documento se lee el nombre "Itaca", Itaca hace alusion al hogar del protagonista de la Iliada de Homero Odiseo (Ὀδυσσεύς) en su nombre griego rey de Itaca donde su amada esposa Penelope(Πηνελόπεια) junto a su hijo Telemaco(Τηλέμαχος) lo esperaban ansiosamente dia a dia, los Romanos como es sabido en la historia tomaron mucho de la cultura griega y lo adaptaron Odiseo se volvio Ulysses, Penelope se volvio Penelopea y Telemaco se volvio Telemachus, todos conocemos la historia de la Iliada, no es lo importane, lo importante de esto es el origen etimologico de la palabra Penelope, este origen se discute, se cree que Pene viene "hilo, tejido, Trama" por otro lado Florencia viene del Latin, de alguna parte del centro de italia y significa "florida", "en flor" o "aquella que da frutos y florece". esto es importante por que al igual que penelope y odiseo, compartimos una vida de amor juntos, vos y maximo - mi telemaco que al igual que en la historia era solo un bebé cuando esta odisea empezó son mi motor, el hilo con el que hacemos fuerte nuestra Itaca, nuestro hogar de calor, seguridad y felicidad.
