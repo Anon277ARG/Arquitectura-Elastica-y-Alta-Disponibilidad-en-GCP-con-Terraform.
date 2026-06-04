@@ -32,9 +32,10 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
 3. Configurar el proyecto: gcloud config set project cloud-lab-493
 4. iniciar terraform: terraform init
 5. verificar los cambios antes de aplicar: terraform plan
-6. aplicar la infraestructura: terraform apply
-7. Obetener la ip del load blancer: terraform output ip_publica_balanceador
-8. Destruir el entorno cuando termine: terraform destroy
+6. en caso de estar en un entorno Windows ```(Get-Content main.tf -Raw) -replace "`r`n", "`n" | Set-Content main.tf -NoNewline ``` para asegurarnos que no hayan incompatibilidades entre el entorno windows y el linux de gcp
+7. aplicar la infraestructura: terraform apply
+8. Obetener la ip del load blancer: terraform output ip_publica_balanceador
+9. Destruir el entorno cuando termine: terraform destroy
    
 ## Componentes
 
@@ -323,6 +324,14 @@ resource "google_compute_region_url_map" "itaca_url_map" {
   default_service = google_compute_region_backend_service.itaca_backend.id
 } 
 ```
+#### Output con la ip publica del balanceador
+```
+output "ip_publica_balanceador" {
+  value = google_compute_forwarding_rule.itaca-forwarding-rule.ip_address
+}
+
+```
+
 --- 
 ## colofon - Itaca
 durante el documento se lee el nombre "Itaca", Itaca hace alusion al hogar del protagonista de la Iliada de Homero Odiseo (Ὀδυσσεύς) en su nombre griego rey de Itaca donde su amada esposa Penelope(Πηνελόπεια) junto a su hijo Telemaco(Τηλέμαχος) lo esperaban ansiosamente dia a dia, los Romanos como es sabido en la historia tomaron mucho de la cultura griega y lo adaptaron Odiseo se volvio Ulysses, Penelope se volvio Penelopea y Telemaco se volvio Telemachus, todos conocemos la historia de la Iliada, no es lo importane, lo importante de esto es el origen etimologico de la palabra Penelope, este origen se discute, se cree que Pene viene "hilo, tejido, Trama" por otro lado Florencia viene del Latin, de alguna parte del centro de italia y significa "florida", "en flor" o "aquella que da frutos y florece". esto es importante por que al igual que penelope y odiseo, compartimos una vida de amor juntos, vos y maximo - mi telemaco que al igual que en la historia era solo un bebé cuando esta odisea empezó son mi motor, el hilo con el que hacemos fuerte nuestra Itaca, nuestro hogar de calor, seguridad y felicidad.
