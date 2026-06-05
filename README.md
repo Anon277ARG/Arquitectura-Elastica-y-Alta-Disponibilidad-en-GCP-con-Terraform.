@@ -426,6 +426,33 @@ hasta ahora el comportamiento es el esperado y solo tenemos que esperar hasta qu
 </figure>
 <br>
 
+#### en este punto si refrescamos la pestaña de nuestro navegador con la ip que nos proporciono terraform deberiamos ver una respuesta
+
+### pasados los 300 segundos de sleep podemos ver como la instancia trabaja al 100%
+<br>
+<figure>
+  <img src="Imagenes/cpu al 100 desde ssh.jpeg" alt="top cpu 100">
+  <figcaption><em>si nos conectamos por ssh y ejecutamos "top" en la terminal podemos ver como la instancia esta trabajando al 100%</em></figcaption>
+</figure>
+<br>
+
+### en este punto el autoscaler entra en panico y crea 5 copias
+<br>
+<figure>
+  <img src="Imagenes/5 instancias en mal estado desde autoscaler.jpeg" alt="5 instancias en mal estado">
+  <figcaption><em>podemos ver que se crearon 5 copias, todas estan desplegando</em></figcaption>
+</figure>
+<br>
+
+### logicamente ninguna responde el health check 
+<br>
+<figure>
+  <img src="Imagenes/5 instancias en mal estado otra vista.jpeg" alt="5 instancias en mal estado health check">
+  <figcaption><em>podemos ver como de estas 5 copias ninguna responde correctamente</em></figcaption>
+</figure>
+<br>
+
+
 --- 
 ## colofon - Itaca
 durante el documento se lee el nombre "Itaca", Itaca hace alusion al hogar del protagonista de la Iliada de Homero Odiseo (Ὀδυσσεύς) en su nombre griego rey de Itaca donde su amada esposa Penelope(Πηνελόπεια) junto a su hijo Telemaco(Τηλέμαχος) lo esperaban ansiosamente dia a dia, los Romanos como es sabido en la historia tomaron mucho de la cultura griega y lo adaptaron Odiseo se volvio Ulysses, Penelope se volvio Penelopea y Telemaco se volvio Telemachus, todos conocemos la historia de la Iliada, no es lo importane, lo importante de esto es el origen etimologico de la palabra Penelope, este origen se discute, se cree que Pene viene de "hilo, tejido, Trama" por otro lado Florencia viene del Latin, de alguna parte del centro de italia y significa "florida", "en flor" o "aquella que da frutos y florece". esto es importante por que al igual que penelope y odiseo, compartimos una vida de amor juntos, vos y maximo - mi telemaco que al igual que en la historia era solo un bebé cuando esta odisea empezó son mi motor, el hilo con el que hacemos fuerte nuestra Itaca, nuestro hogar de calor, seguridad y felicidad.
