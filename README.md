@@ -368,6 +368,14 @@ Despues de clonar este repositorio, autenticarnos en los servicios de google, in
 </figure>
 <br>
 
+### Fase de Inicializacion y tiempos de gracias
+<br>
+En este primer paso, si tomamos la dirección IP del balanceador y la abrimos en el navegador, veremos que la arquitectura temporalmente no responde. Esto es un comportamiento esperado, ya que la infraestructura se encuentra intencionalmente "congelada" por diseño para proteger el ciclo de vida de los recursos.
+<br>
+Esta decisión arquitectónica se apoya en tres configuraciones críticas:
+1. Initial Delay del Managed Instance Group (300s): Las instancias e2-micro tardan entre 2 y 3 minutos en descargar actualizaciones e instalar dependencias (Python, FastAPI). El Health Check hace pruebas cada 10 segundos y, si falla 3 veces, elimina la instancia. Para evitar incurrir en un loop infinito de creación y destrucción prematura, se configuró un delay de 300 segundos, dándole tiempo de gracia a la máquina para exponer el puerto 8080.
+2. Cooldown del Autoscaler (180s): Al instalar las dependencias, el uso de la CPU en una máquina tan pequeña sube naturalmente al 100%. Este cooldown evita que el autoscaler lea ese pico temporal como tráfico real y cree réplicas innecesarias (falsos positivos).
+3. Sleep en el Script de Estrés (300s): El monitor de métricas de GCP no diferencia entre "uso de CPU por instalación" y "uso de CPU por estrés". Por lo tanto, el script de arranque tiene un comando sleep 300 antes de ejecutar estresar.sh. Esto nos permite separar las métricas, esperar a que la instancia converja, y recién ahí disparar la CPU al 100% para observar cómo se activa el autoscaler de forma controlada.
 --- 
 ## colofon - Itaca
 durante el documento se lee el nombre "Itaca", Itaca hace alusion al hogar del protagonista de la Iliada de Homero Odiseo (Ὀδυσσεύς) en su nombre griego rey de Itaca donde su amada esposa Penelope(Πηνελόπεια) junto a su hijo Telemaco(Τηλέμαχος) lo esperaban ansiosamente dia a dia, los Romanos como es sabido en la historia tomaron mucho de la cultura griega y lo adaptaron Odiseo se volvio Ulysses, Penelope se volvio Penelopea y Telemaco se volvio Telemachus, todos conocemos la historia de la Iliada, no es lo importane, lo importante de esto es el origen etimologico de la palabra Penelope, este origen se discute, se cree que Pene viene de "hilo, tejido, Trama" por otro lado Florencia viene del Latin, de alguna parte del centro de italia y significa "florida", "en flor" o "aquella que da frutos y florece". esto es importante por que al igual que penelope y odiseo, compartimos una vida de amor juntos, vos y maximo - mi telemaco que al igual que en la historia era solo un bebé cuando esta odisea empezó son mi motor, el hilo con el que hacemos fuerte nuestra Itaca, nuestro hogar de calor, seguridad y felicidad.
