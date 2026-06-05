@@ -391,6 +391,41 @@ En este primer paso, si tomamos la dirección IP del balanceador y la abrimos en
   <figcaption><em>si miramos desde compute engine vamos a ver una unica instancia online, ignorar las otras dos intancias</em></figcaption>
 </figure>
 <br>
+<br>
+<figure>
+  <img src="Imagenes/1 vm check mal.jpeg" alt="esta vm no responde">
+  <figcaption><em>si miramos desde health check esta instancia esta en mal estado, comportamiento esperado</em></figcaption>
+</figure>
+<br>
+<br>
+<figure>
+  <img src="Imagenes/1 instancia auto scaler mal estado.jpeg" alt="autoscaler espera">
+  <figcaption><em>si miramos desde autoscaler podemos ver como todavia esta esperando</em></figcaption>
+</figure>
+<br>
+
+### comportamiento esperado
+hasta ahora el comportamiento es el esperado y solo tenemos que esperar hasta que se terminen todos los tiempos 
+1. 180 segundos de cooldown para que el autoscaler funcione
+2. 300 segundos para que el health check empiece a chequear si la virtual machine responde
+3. 300 segundos de sleep para que la instancia comience a estresarse
+
+### pasalos 180 segundos de cooldown del autoscaler podemos ver como esta instancia ya responde
+<br>
+<figure>
+  <img src="Imagenes/1 instancia autoscaler buen estado.jpeg" alt="autoscaler 1 ok">
+  <figcaption><em>si miramos desde autoscaler podemos ver como todavia ya responde</em></figcaption>
+</figure>
+<br>
+
+### pasados los 300 segundos del health check podemos ver como la instancia responde
+<br>
+<figure>
+  <img src="Imagenes/1 vm check ok.jpeg" alt="health check 1 ok">
+  <figcaption><em>si miramos desde la vista de health check podemos ver como esta instancia ya responde</em></figcaption>
+</figure>
+<br>
+
 --- 
 ## colofon - Itaca
 durante el documento se lee el nombre "Itaca", Itaca hace alusion al hogar del protagonista de la Iliada de Homero Odiseo (Ὀδυσσεύς) en su nombre griego rey de Itaca donde su amada esposa Penelope(Πηνελόπεια) junto a su hijo Telemaco(Τηλέμαχος) lo esperaban ansiosamente dia a dia, los Romanos como es sabido en la historia tomaron mucho de la cultura griega y lo adaptaron Odiseo se volvio Ulysses, Penelope se volvio Penelopea y Telemaco se volvio Telemachus, todos conocemos la historia de la Iliada, no es lo importane, lo importante de esto es el origen etimologico de la palabra Penelope, este origen se discute, se cree que Pene viene de "hilo, tejido, Trama" por otro lado Florencia viene del Latin, de alguna parte del centro de italia y significa "florida", "en flor" o "aquella que da frutos y florece". esto es importante por que al igual que penelope y odiseo, compartimos una vida de amor juntos, vos y maximo - mi telemaco que al igual que en la historia era solo un bebé cuando esta odisea empezó son mi motor, el hilo con el que hacemos fuerte nuestra Itaca, nuestro hogar de calor, seguridad y felicidad.
