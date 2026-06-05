@@ -27,7 +27,7 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
 - **Permisos de IAM** - tener los permisos en GCP para crear redes y maquinas virtuales.
 
 ### despliegue
-1. Clonar el repositorio: git clone https://github.com/tu-usuario/tu-repo.git
+1. Clonar el repositorio: git clone [https://github.com/tu-usuario/tu-repo.git](https://github.com/Anon277ARG/Arquitectura-Elastica-y-Alta-Disponibilidad-en-GCP-con-Terraform.)
 2. autenticar en gcp: gcloud auth application-default login
 3. Configurar el proyecto: gcloud config set project cloud-lab-493
 4. iniciar terraform: terraform init
