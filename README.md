@@ -32,9 +32,10 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
 3. Configurar el proyecto: gcloud config set project cloud-lab-493
 4. iniciar terraform: terraform init
 5. verificar los cambios antes de aplicar: terraform plan
-6. en caso de estar en un entorno Windows ```(Get-Content main.tf -Raw) -replace "`r`n", "`n" | Set-Content main.tf -NoNewline ``` para asegurarnos que no hayan incompatibilidades entre el entorno windows y el linux de gcp
+6. PASO OPCIONAL, este paso solo es importante si estamos en un entorno Windows, en caso contrario se puede saltear ```(Get-Content main.tf -Raw) -replace "`r`n", "`n" | Set-Content main.tf -NoNewline ``` para asegurarnos que no hayan incompatibilidades entre el entorno windows y el linux de gcp
 7. aplicar la infraestructura: terraform apply
-8. Obetener la ip del load blancer: terraform output ip_publica_balanceador
+8. Una vez obtenida la IP, abrí `http://<ip>` en el navegador. Durante los primeros 5 minutos la arquitectura no va a responder, 
+ese comportamiento está documentado en la sección de operaciones.
 9. Destruir el entorno cuando termine: terraform destroy
    
 ## Componentes
