@@ -452,6 +452,66 @@ hasta ahora el comportamiento es el esperado y solo tenemos que esperar hasta qu
 </figure>
 <br>
 
+### vista desde compute engine
+<br>
+<figure>
+  <img src="Imagenes/6 instancias desde compute engine.jpeg" alt="6 instancias creadas">
+  <figcaption><em>podemos ver el total de 6 instancias desde compute engine</em></figcaption>
+</figure>
+<br>
+
+### comportamiento esperado
+el comportamiento es el mismo pero con 5 instancias extras, el siclo se repite
+1. 180 segundos de cooldown para que el autoscaler funcione
+2. 300 segundos para que el health check empiece a chequear si la virtual machine responde
+3. 300 segundos de sleep para que la instancia comience a estresarse
+
+### vista desde autoscaler
+<br>
+<figure>
+  <img src="Imagenes/6 instancias desde autoscaler.jpeg" alt="6 ">
+  <figcaption><em>podemos ver como el autoscaler nos dice que las 6 instancias estan al 100% y que no puede crear mas ya que fue el limite que pusimos</em></figcaption>
+</figure>
+<br>
+
+### el health check esta correcto en las 6 instancias
+<br>
+<figure>
+  <img src="Imagenes/6 instancias ok desde healthcheck otra vista.jpeg" alt="6 instancias responde">
+  <figcaption><em>aca podemos ver como las 6 instancias responden correctamente</em></figcaption>
+</figure>
+<br>
+
+#### si esperamos a que pasen los 300 segundos sleep y volvemos a la ip que tenemos abierta en nuestro navegar y refrescamos repetidamente, estas responde.
+<br>
+<br>
+<figure>
+  <img src="Imagenes/respuesta 051w.jpeg" alt="la instancia 051w responde">
+  <figcaption><em>la instancia 051w responde</em></figcaption>
+</figure>
+<br>
+<br>
+<figure>
+  <img src="Imagenes/respuesta 0frv.jpeg" alt="la instancias 0frv responde">
+  <figcaption><em>la instancia 0frv responde</em></figcaption>
+</figure>
+<br>
+<br>
+<figure>
+  <img src="Imagenes/respuesta m6qk.jpeg" alt="la instancias m6qk responde">
+  <figcaption><em>la instancia m6qk responde</em></figcaption>
+</figure>
+<br>
+<br>
+
+### siclo de vida de las VMs
+El despliegue alcanza su estado operativo a los 5 minutos. A los 10 minutos detona el autoescalado horizontal, alcanzando la capacidad máxima de 6 nodos. Tras finalizar el proceso de estrés de CPU (16 minutos), el sistema inicia una fase de escalado descendente (scale-down) para optimizar costos, regresando a 1 sola instancia tras el periodo de enfriamiento.
+<br>
+<figure>
+  <img src="Imagenes/siclo de vida de las VMs.jpeg" alt="siclo de vida">
+  <figcaption><em>en esta grafica podemos ver como se crea la vm, esta hace un pico de uso de cpu gracias a la instalacio de dependencias, luego se vuelve a dormir, y comienza otra vez a consumir recursos activando el austoscaler y repitiendo el proceso con las otras 5 instancias</em></figcaption>
+</figure>
+<br>
 
 --- 
 ## colofon - Itaca
