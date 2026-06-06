@@ -559,6 +559,125 @@ Debido a que este entorno está diseñado con fines de laboratorio y pruebas de 
 
 El costo real de ejecutar el laboratorio completo documentado en este repositorio (despliegue, 15 minutos de estrés al 100% de capacidad y destrucción total) es inferior a $0.10 USD, demostrando un uso altamente eficiente de los recursos de la nube.
 
+## Registro de Incidentes y Resolución de Problemas
+ 
+### Proyecto Itaca — Arquitectura Elástica y Alta Disponibilidad en GCP con Terraform
+
+#### Incidente 1 — Inestabilidad en el ciclo de vida del Managed Instance Group (Flapping)
+
+##### Síntoma
+Las instancias entraban en un bucle continuo de creación y destrucción, o el autoscaler aprovisionaba réplicas prematuramente antes de registrar tráfico real de usuarios.
+
+##### Causa raíz
+La ejecución del startup script (descarga de paquetes vía apt-get e instalación de dependencias de Python) saturaba la CPU de las instancias e2-micro al 100%. El autoscaler interpretaba este pico temporal como tráfico legítimo, mientras que los health checks fallaban al no recibir respuesta en el puerto 8080 debido a que la aplicación aún no estaba inicializada.
+
+##### Resolución implementada
+Se diseñó un esquema de desacoplamiento temporal mediante la sincronización de tres variables:
+initial_delay_sec = 300 en el MIG — previene que el sistema de auto-healing marque la instancia como corrupta durante los primeros 5 minutos de aprovisionamiento.
+cooldown_period = 180 en el autoscaler — instruye al escalador a ignorar los picos de CPU durante los primeros 3 minutos de vida de la instancia.
+sleep 300 en el script de inicialización — pospone intencionalmente el proceso de estrés, permitiendo aislar y estabilizar las métricas de arranque frente a las métricas de carga real.
+
+##### Lección aprendida
+En instancias pequeñas, la instalación de dependencias genera picos de CPU que el autoscaler no puede distinguir de carga real. Separar la fase de inicialización de la fase de carga es una decisión de diseño. En producción este problema se resuelve usando imágenes de disco pre-construidas (Packer) o contenedores Docker, donde las dependencias ya están instaladas y el arranque toma segundos.
+
+#### Incidente 2 — Fallo silencioso en el aprovisionamiento de instancias (CRLF vs LF)
+
+##### Síntoma
+Las instancias se creaban correctamente en Compute Engine pero no exponían la API en el puerto 8080. La verificación de logs en el puerto serie reflejaba que el startup script no se estaba ejecutando.
+
+##### Causa raíz
+Incompatibilidad de codificación de caracteres. Al desarrollar el código Terraform en un entorno Windows, se insertaron saltos de línea tipo CRLF (\r\n). El sistema operativo de las instancias (Debian Linux) espera saltos de línea tipo LF (\n), lo que causaba un error de lectura silencioso en el intérprete de bash.
+
+##### Resolución implementada
+Estandarización del formato del archivo mediante un comando de sanitización pre-despliegue en PowerShell:
+powershell(Get-Content main.tf -Raw) -replace "`r`n", "`n" | Set-Content main.tf -NoNewline
+
+##### Lección aprendida
+En entornos Windows, cualquier archivo que contenga scripts bash debe ser normalizado a LF antes de ser procesado por Terraform. La falla es silenciosa: no hay error visible en terraform apply, el problema solo aparece al inspeccionar los logs del puerto serie de la VM.
+
+#### Incidente 3 — Pérdida de enrutamiento en el Application Load Balancer
+
+##### Síntoma
+El balanceador retornaba errores de conectividad y los health checks marcaban los backends permanentemente como unhealthy. Adicionalmente el startup script fallaba al intentar actualizar los repositorios de Linux.
+
+##### Causa raíz
+Dos problemas simultáneos:
+El balanceador regional EXTERNAL_MANAGED opera bajo un esquema de proxies Envoy que requiere por diseño una topología de subred específica que no estaba declarada inicialmente.
+Las reglas estrictas de la VPC custom sin IPs públicas bloqueaban tanto el tráfico saliente necesario para la descarga de paquetes como el tráfico entrante de los monitores de Google.
+
+##### Resolución implementada
+Topología de red — aprovisionamiento de la subred itaca_proxy con el propósito obligatorio
+```
+REGIONAL_MANAGED_PROXY:
+hclresource "google_compute_subnetwork" "itaca_proxy" {
+  name    = "itaca-subnetwork-proxy"
+  region  = var.region
+  ip_cidr_range = "10.129.0.0/23"
+  network = google_compute_network.itaca_network.id
+  purpose = "REGIONAL_MANAGED_PROXY"
+  role    = "ACTIVE"
+}
+```
+Salida a internet — despliegue de Cloud NAT y Cloud Router para habilitar tráfico saliente manteniendo el aislamiento de la VPC.
+Control de ingress — regla de firewall que autoriza tráfico TCP al puerto 8080 exclusivamente a los rangos IP de los servidores de health check de Google:
+hclsource_ranges = ["35.191.0.0/16", "130.211.0.0/22"]
+##### Lección aprendida
+El esquema EXTERNAL_MANAGED es el nuevo estándar para ALB regionales en GCP pero tiene requisitos de red más estrictos que el esquema clásico. La proxy subnet no es opcional, es un prerequisito arquitectónico del balanceador.
+
+#### Incidente 4 — Procesos huérfanos: la API y el script de estrés morían al terminar el startup script
+
+##### Síntoma
+La VM arrancaba correctamente e instalaba las dependencias, pero al cabo de unos segundos el health check dejaba de responder. Al conectarse por SSH y ejecutar ps aux, los procesos de uvicorn y stress no estaban corriendo.
+
+##### Causa raíz
+El operador & envía el proceso al background pero lo mantiene como hijo del shell actual. Cuando el shell del startup script terminaba, el kernel enviaba SIGHUP a todos los procesos hijos, matándolos.
+Código problemático
+``` bashpython3 -m uvicorn main:app --host 0.0.0.0 --port 8080 --app-dir /home &
+sleep 300 && stress --cpu $(nproc) --timeout 960 &
+```
+##### Resolución implementada
+Uso de nohup para desconectar los procesos del shell padre, combinado con redirección de logs:
+``` bashpython3 -m uvicorn main:app --host 0.0.0.0 --port 8080 --app-dir /home &
+nohup /home/estresar.sh > /home/estresar.log 2>&1 &
+```
+El script de estrés fue separado en un archivo independiente con heredoc de comillas simples para evitar interpolación prematura de variables:
+```bashcat > /home/estresar.sh << 'BASH_EOF'
+#!/bin/bash
+sleep 300
+stress --cpu $(nproc) --timeout 960
+BASH_EOF
+chmod +x /home/estresar.sh
+```
+##### Lección aprendida
+nohup desconecta el proceso del shell padre, permitiendo que sobreviva cuando el shell termina. Las comillas simples en 'BASH_EOF' son críticas: sin ellas bash evaluaría $(nproc) al momento de escribir el archivo en lugar de al momento de ejecutarlo.
+
+#### Incidente 5 — Error en terraform destroy: recurso en uso
+
+##### Síntoma
+Al ejecutar terraform destroy, GCP devolvía el siguiente error:
+``` Error: googleapi: Error 400: The subnetwork resource 'itaca-subnetwork-proxy' is already being used by 'itaca-forwarding-rule', resourceInUseByAnotherResource
+```
+La infraestructura quedaba en un estado parcialmente destruido con el state de Terraform desincronizado de GCP.
+
+##### Causa raíz
+Terraform intentaba destruir la proxy subnet antes de destruir el forwarding rule. Como el forwarding rule no referenciaba directamente a la proxy subnet en el código, Terraform no infería la dependencia y ejecutaba ambas destrucciones en paralelo.
+
+##### Resolución implementada
+Declaración explícita de dependencia mediante depends_on en el forwarding rule:
+
+```hclresource "google_compute_forwarding_rule" "itaca-forwarding-rule" {
+  name                  = "itaca-forwarding-rule"
+  region                = var.region
+  target                = google_compute_region_target_http_proxy.itaca_target_proxy.id
+  port_range            = "80"
+  load_balancing_scheme = "EXTERNAL_MANAGED"
+  network               = google_compute_network.itaca_network.id
+  depends_on            = [google_compute_subnetwork.itaca_proxy]
+}
+```
+##### Lección aprendida
+Terraform infiere dependencias automáticamente solo cuando hay referencias directas entre recursos. Cuando la dependencia es implícita (dos recursos que GCP relaciona internamente pero que no están referenciados entre sí en el código), hay que declararla explícitamente con depends_on. Esto aplica especialmente al orden de destrucción.
+
 --- 
 ## colofon - Itaca
 durante el documento se lee el nombre "Itaca", Itaca hace alusion al hogar del protagonista de la Iliada de Homero Odiseo (Ὀδυσσεύς) en su nombre griego rey de Itaca donde su amada esposa Penelope(Πηνελόπεια) junto a su hijo Telemaco(Τηλέμαχος) lo esperaban ansiosamente dia a dia, los Romanos como es sabido en la historia tomaron mucho de la cultura griega y lo adaptaron Odiseo se volvio Ulysses, Penelope se volvio Penelopea y Telemaco se volvio Telemachus, todos conocemos la historia de la Iliada, no es lo importane, lo importante de esto es el origen etimologico de la palabra Penelope, este origen se discute, se cree que Pene viene de "hilo, tejido, Trama" por otro lado Florencia viene del Latin, de alguna parte del centro de italia y significa "florida", "en flor" o "aquella que da frutos y florece". esto es importante por que al igual que penelope y odiseo, compartimos una vida de amor juntos, vos y maximo - mi telemaco que al igual que en la historia era solo un bebé cuando esta odisea empezó son mi motor, el hilo con el que hacemos fuerte nuestra Itaca, nuestro hogar de calor, seguridad y felicidad.
