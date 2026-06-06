@@ -560,8 +560,6 @@ Debido a que este entorno está diseñado con fines de laboratorio y pruebas de 
 El costo real de ejecutar el laboratorio completo documentado en este repositorio (despliegue, 15 minutos de estrés al 100% de capacidad y destrucción total) es inferior a $0.10 USD, demostrando un uso altamente eficiente de los recursos de la nube.
 
 ## Registro de Incidentes y Resolución de Problemas
- 
-### Proyecto Itaca — Arquitectura Elástica y Alta Disponibilidad en GCP con Terraform
 
 #### Incidente 1 — Inestabilidad en el ciclo de vida del Managed Instance Group (Flapping)
 
