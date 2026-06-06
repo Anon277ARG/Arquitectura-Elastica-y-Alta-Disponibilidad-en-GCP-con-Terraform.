@@ -535,28 +535,24 @@ La adopción de la Infraestructura como Código (IaC) permite un despliegue ági
 
 1. Costos Base de Red y Balanceo (Cargos Fijos)
 Independientemente de la cantidad de máquinas virtuales que estén funcionando, la infraestructura de red perimetral tiene un costo de mantenimiento constante por hora:
-Cloud NAT & Cloud Router: ~ $32.00 USD / mes (Cargo fijo por mantener la pasarela de traducción activa).
-
+Cloud NAT & Cloud Router: ~ $18.00 USD / mes (Cargo fijo por mantener la pasarela de traducción activa).
 Application Load Balancer (Regional): ~ $18.00 USD / mes (Cargo base por las reglas de reenvío y proxy, excluyendo el procesamiento de datos).
 
-Subtotal Redes: ~ $50.00 USD mensuales.
+**Subtotal Redes: ~ $50.00 USD mensuales.**
 
 2. Costos de Cómputo (Cargos Dinámicos)
 El clúster utiliza instancias e2-micro con discos de arranque estándar de 10 GB. El costo por nodo es de aproximadamente $13.00 USD mensuales ($8.00 por cómputo + $5.00 por almacenamiento).
-
 Al tener un Managed Instance Group (MIG) elástico, el costo mensual fluctuará entre dos extremos:
-
 Escenario de Reposo (Tráfico Mínimo): El MIG mantiene 1 sola réplica (min_replicas = 1).
-
 Costo de cómputo: ~ $13.00 USD.
 
-Costo Total (Redes + Cómputo): ~ $63.00 USD / mes.
+**Costo Total (Redes + Cómputo): ~ $63.00 USD / mes.**
 
 Escenario de Estrés (Pico de Demanda 24/7): El Autoscaler aprovisiona el máximo permitido de 6 réplicas (max_replicas = 6).
-
 Costo de cómputo: ~ $78.00 USD.
+**Costo Total (Redes + Cómputo): ~ $114.00 USD / mes.**
 
-Costo Total (Redes + Cómputo): ~ $128.00 USD / mes.
+### todos estos numeros son estimativos 
 
 Estrategia de Mitigación de Costos
 Debido a que este entorno está diseñado con fines de laboratorio y pruebas de resiliencia, el ciclo de vida de la infraestructura es efímero. Al utilizar la inmutabilidad de Terraform, el comando terraform destroy garantiza que no queden recursos huérfanos (como discos desconectados o IPs reservadas).
