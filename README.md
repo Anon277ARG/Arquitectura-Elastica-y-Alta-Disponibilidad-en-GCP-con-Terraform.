@@ -44,11 +44,11 @@ El objetivo es crear una arquitectura elastica, escalable y funcional
 ese comportamiento está documentado en la sección de operaciones.
 9. Destruir el entorno cuando termine: terraform destroy
 
-Comportamiento Esperado del Sistema
+### Comportamiento Esperado del Sistema
 Esta sección describe el ciclo de vida completo de la arquitectura desde el momento del despliegue hasta el scale-down final. Cada comportamiento descripto es intencional y responde a decisiones de diseño documentadas en la sección de componentes.
 
-Fase 1 — Despliegue (0 – 3 min)
-
+#### Fase 1 — Despliegue (0 – 3 min)
+<br>
 terraform apply crea los 16 recursos en GCP en orden según el grafo de dependencias.
 El MIG levanta una única instancia (min_replicas = 1) en una de las zonas configuradas.
 La VM inicia el startup script: actualiza repositorios, instala Python, FastAPI y la herramienta stress.
@@ -56,8 +56,8 @@ Durante esta fase la CPU de la e2-micro sube naturalmente al 100% por la instala
 La IP del balanceador no responde. Este es el comportamiento esperado.
 
 
-Fase 2 — Inicialización y tiempos de gracia (3 – 5 min)
-
+#### Fase 2 — Inicialización y tiempos de gracia (3 – 5 min)
+<br>
 El startup script finaliza la instalación y levanta uvicorn en el puerto 8080 con &.
 El proceso estresar.sh se lanza con nohup y entra en sleep 300, esperando en segundo plano.
 El health check comienza a evaluar la instancia cada 10 segundos en la ruta GET /health.
@@ -65,14 +65,13 @@ El initial_delay_sec = 300 del MIG protege la instancia durante este período, e
 El cooldown_period = 180 del autoscaler ignora los picos de CPU de esta fase, evitando réplicas prematuras.
 Al cabo de aproximadamente 5 minutos la instancia pasa el health check y queda en buen estado.
 La IP del balanceador comienza a responder. Navegando a http://<ip> se obtiene la siguiente respuesta:
-
-json{
+```
   "mensaje": "Instancia activa recibiendo trafico",
   "maquina": "itaca-vm-xxxx"
-}
+```
 
-Fase 3 — Estrés y autoescalado horizontal (5 – 11 min)
-
+#### Fase 3 — Estrés y autoescalado horizontal (5 – 11 min)
+<br>
 El sleep 300 del script de estrés termina y stress --cpu $(nproc) ejecuta, llevando la CPU al 100%.
 El autoscaler detecta que el uso de CPU supera el umbral configurado (80%) y toma la decisión de escalar.
 El MIG crea 5 réplicas adicionales hasta alcanzar el máximo configurado (max_replicas = 6).
@@ -82,8 +81,8 @@ Al cabo de aproximadamente 10 – 11 minutos desde el deploy inicial, las 6 inst
 Refrescando repetidamente http://<ip> en el navegador, el campo maquina cambia entre los hostnames de las 6 instancias, demostrando que el balanceador distribuye el tráfico entre todos los nodos activos.
 
 
-Fase 4 — Estabilización y scale-down (21 – 30 min)
-
+#### Fase 4 — Estabilización y scale-down (21 – 30 min)
+<br>
 El proceso stress finaliza tras el timeout configurado de 960 segundos (~16 minutos desde que arrancó).
 El uso de CPU cae en todas las instancias por debajo del umbral del 80%.
 El autoscaler detecta que la carga no justifica mantener 6 réplicas e inicia el scale-down gradual.
@@ -92,8 +91,8 @@ El sistema regresa a 1 instancia activa (min_replicas = 1).
 La IP del balanceador sigue respondiendo durante todo el proceso de scale-down.
 
 
-Fase 5 — Destrucción del entorno
-
+#### Fase 5 — Destrucción del entorno
+<br>
 Ejecutar terraform destroy en la terminal.
 Terraform destruye los recursos en orden inverso al grafo de dependencias.
 El MIG termina todas las instancias activas antes de poder eliminarse. Este proceso puede tomar entre 5 y 15 minutos dependiendo de cuántas instancias estén corriendo.
