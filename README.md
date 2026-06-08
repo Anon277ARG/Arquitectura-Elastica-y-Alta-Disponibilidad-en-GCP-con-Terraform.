@@ -275,88 +275,101 @@ Las seis instancias responden correctamente a las verificaciones de estado.
 
 <br>
 <br>
-```
 
+### Ciclo de vida de las VMs
 
-### siclo de vida de las VMs
-El despliegue alcanza su estado operativo a los 5 minutos. A los 10 minutos detona el autoescalado horizontal, alcanzando la capacidad máxima de 6 nodos. Tras finalizar el proceso de estrés de CPU (16 minutos), el sistema inicia una fase de escalado descendente (scale-down) para optimizar costos, regresando a 1 sola instancia tras el periodo de enfriamiento.
+La infraestructura alcanza su estado operativo aproximadamente a los 5 minutos del despliegue. A los 10 minutos se inicia el escalado horizontal automático, alcanzando el máximo configurado de 6 instancias. Una vez finalizado el proceso de estrés de CPU (16 minutos), el autoscaler comienza la fase de escalado descendente (*scale-down*), reduciendo progresivamente la cantidad de nodos hasta regresar a una única instancia para optimizar costos operativos.
+
 <br>
 <figure>
-  <img src="Imagenes/siclo de vida de las VMs.jpeg" alt="siclo de vida">
-  <figcaption><em>en esta grafica podemos ver como se crea la vm, esta hace un pico de uso de cpu gracias a la instalacio de dependencias, luego se vuelve a dormir, y comienza otra vez a consumir recursos activando el austoscaler y repitiendo el proceso con las otras 5 instancias</em></figcaption>
+  <img src="Imagenes/ciclo de vida de las VMs.jpeg" alt="ciclo de vida de las VMs">
+  <figcaption><em>La gráfica muestra el comportamiento de una instancia durante todo su ciclo de vida. Inicialmente se observa un pico de CPU asociado a la instalación de dependencias. Posteriormente, la carga disminuye hasta que se ejecuta el proceso de estrés, provocando un nuevo incremento en el consumo de CPU que activa el autoscaler. Las nuevas instancias replican el mismo patrón de inicialización y convergencia.</em></figcaption>
 </figure>
 <br>
 <br>
 
-### cuando finalizamos de jugar con esta red lo mejor es destruirla 
+### Destrucción de la infraestructura
+
+Una vez finalizadas las pruebas, se recomienda eliminar todos los recursos creados para evitar costos innecesarios. Terraform permite destruir la infraestructura completa de forma controlada mediante un único comando, garantizando que los recursos sean eliminados respetando sus dependencias.
+
 <br>
 <figure>
   <img src="Imagenes/Terraform destroy.jpeg" alt="terraform destroy">
-  <figcaption><em>Utilizando Terraform destroy nos aseguramos que todos los recursos se destruyan de forma correcta</em></figcaption>
+  <figcaption><em>Ejecución del comando <code>terraform destroy</code> para eliminar todos los recursos aprovisionados durante el laboratorio.</em></figcaption>
 </figure>
 <br>
 <br>
 
+### Componentes
 
-## Componentes
 <details>
-<summary>Descripcion detallada de los componentes de la arquitectura componentes de la arquitectura</summary>
-<br>
-  
-### redes
-- red VPC privada con el nombre de "itaca-network" creada en Santiago, la unica configuracion relevante aca es que se desactivo la creacion automatica de subredes.<br>
-  ```
-  resource "google_compute_network" "itaca_network" {
-    name = "itaca-network"
-    routing_mode = "GLOBAL"
-    auto_create_subnetworks = false
-  }
-  ```
-- sub red con el nombre de "Itaca-subnet" dedicada a asegurar la privacidad de las VMs.
-  ```
-  resource "google_compute_subnetwork" "itaca_subnet" {
-    name = "itaca-subnetwork"
-    region = var.region
-    ip_cidr_range = "10.42.0.0/24"
-    network = google_compute_network.itaca_network.id
-    private_ip_google_access = true
-  }
-  ```
-- sub red proxy para asegurar la conexion entre el Load Balancer y la sub red de las VMs.
-  ```
-  resource "google_compute_subnetwork" "itaca_proxy" {
-    name = "itaca-subnetwork-proxy"
-    region = var.region
-    ip_cidr_range = "10.129.0.0/23"
-    network = google_compute_network.itaca_network.id
-    purpose = "REGIONAL_MANAGED_PROXY"
-    role = "ACTIVE"
-  }
-  ```
-- cloud router para el ruteo a la internet publica
-  ```
-  resource "google_compute_router" "itaca_router" {
-    name = "itaca-router"
-    region = var.region
-    network = google_compute_network.itaca_network.id
+<summary>Descripción detallada de los componentes de la arquitectura</summary>
 
-  }
-  ```
-- cloud nat para la traduccion de ips
-  ```
-  resource "google_compute_router_nat" "itaca_nat" {
-  name = "intaca-mig-updatenat"
-  router = google_compute_router.itaca_router.name
-  region = var.region
-  nat_ip_allocate_option = "AUTO_ONLY"
+<br>
+
+#### Redes
+
+- **VPC personalizada** denominada `itaca-network`, desplegada en la región de Santiago. La configuración más relevante es la desactivación de la creación automática de subredes, permitiendo un control total sobre el direccionamiento IP.
+
+```terraform
+resource "google_compute_network" "itaca_network" {
+  name                    = "itaca-network"
+  routing_mode            = "GLOBAL"
+  auto_create_subnetworks = false
+}
+```
+
+- **Subred privada** denominada `itaca-subnetwork`, utilizada para alojar las instancias del Managed Instance Group. Se habilitó `private_ip_google_access` para permitir el acceso a los servicios de Google sin necesidad de direcciones IP públicas.
+
+```terraform
+resource "google_compute_subnetwork" "itaca_subnet" {
+  name                     = "itaca-subnetwork"
+  region                   = var.region
+  ip_cidr_range            = "10.42.0.0/24"
+  network                  = google_compute_network.itaca_network.id
+  private_ip_google_access = true
+}
+```
+
+- **Proxy-only subnet** denominada `itaca-subnetwork-proxy`, requerida por los Application Load Balancers regionales. Esta subred es utilizada por los proxies administrados por Google para enrutar tráfico hacia los backends.
+
+```terraform
+resource "google_compute_subnetwork" "itaca_proxy" {
+  name          = "itaca-subnetwork-proxy"
+  region        = var.region
+  ip_cidr_range = "10.129.0.0/23"
+  network       = google_compute_network.itaca_network.id
+  purpose       = "REGIONAL_MANAGED_PROXY"
+  role          = "ACTIVE"
+}
+```
+
+- **Cloud Router**, responsable de proporcionar las rutas necesarias para que las instancias privadas puedan acceder a Internet mediante Cloud NAT.
+
+```terraform
+resource "google_compute_router" "itaca_router" {
+  name    = "itaca-router"
+  region  = var.region
+  network = google_compute_network.itaca_network.id
+}
+```
+
+- **Cloud NAT**, encargado de proporcionar salida a Internet para las instancias privadas sin necesidad de asignar direcciones IP públicas.
+
+```terraform
+resource "google_compute_router_nat" "itaca_nat" {
+  name                               = "intaca-mig-updatenat"
+  router                             = google_compute_router.itaca_router.name
+  region                             = var.region
+  nat_ip_allocate_option             = "AUTO_ONLY"
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
 
-    log_config {
+  log_config {
     enable = true
     filter = "ALL"
-    } 
   }
-  ```
+}
+```
 
 ### Firewall
 - reglas de firewall con el nombre "itaca-firewall, itaca-health-check, allow-ssh-itaca" 
