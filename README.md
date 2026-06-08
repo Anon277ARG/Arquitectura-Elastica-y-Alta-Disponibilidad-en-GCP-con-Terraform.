@@ -5,6 +5,9 @@ Arquitectura elástica y de alta disponibilidad desplegada en Google Cloud Platf
 La capa de cómputo opera de forma aislada, manteniendo las instancias sin IP pública y accesibles únicamente mediante Identity-Aware Proxy (IAP). El objetivo fue diseñar una plataforma resiliente capaz de escalar automáticamente (scale-out) ante picos de demanda y regresar a un estado de bajo costo (scale-in) cuando la carga disminuye. <br>
 Durante el desarrollo, se documentaron incidentes reales de despliegue relacionados con el flapping del autoscaler, requisitos de red modernos (Envoy proxy subnet), startup scripts y dependencias implícitas en IaC.
 
+### Disclamer
+Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratorio. Se ha priorizado el análisis del cómputo y las redes por sobre la persistencia de datos. Asimismo, la redacción de esta documentación conserva deliberadamente ciertos errores tipográficos o giros lingüísticos propios del autor para mantener un tono auténtico, humano y personal, alejándose de las estructuras generadas íntegramente por inteligencia artificial.
+
 ## Diagrama de arquitectura visual
 <figure>
   <img src="Imagenes/Diagrama.png" alt="Arquitectura fase 1 y fase 2">
@@ -60,9 +63,11 @@ El initial_delay_sec = 300 del MIG protege la instancia durante este período, e
 El cooldown_period = 180 del autoscaler ignora los picos de CPU de esta fase, evitando réplicas prematuras.
 Al cabo de aproximadamente 5 minutos la instancia pasa el health check y queda en buen estado.
 La IP del balanceador comienza a responder. Navegando a http://<ip> se obtiene la siguiente respuesta:
+  
 ```
   "mensaje": "Instancia activa recibiendo trafico",
   "maquina": "itaca-vm-xxxx"
+
 ```
 
 #### Fase 3 — Estrés y autoescalado horizontal (5 – 11 min)
