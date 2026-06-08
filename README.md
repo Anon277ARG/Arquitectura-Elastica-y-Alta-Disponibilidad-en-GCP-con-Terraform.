@@ -126,37 +126,14 @@ Destroy complete! Resources: 16 destroyed.
 #### Siguiendo las instrucciones descritas más arriba vamos a desplegar esta arquitectura.
 Después de clonar este repositorio, autenticarnos en los servicios de Google, iniciar Terraform y solucionar incompatibilidades entre sistemas operativos, los pasos que se establecen son los siguientes
 - ```.\terraform.exe plan``` y ``` .\terraform.exe apply``` al usar estos comandos terraform le pregunta al proveedor si dichos recursos ya existen, trae el estado de la arquitectura actual y actualiza nuestro archivo ```terraform.tfstate``` documento que registra el estado actual de nuestra arquitectura, también crea un grafo de dependencias, terraform no puede crear una subred si primero no tiene una red.
-  <br>
-  <br>
-<figure>
-  <img src="Imagenes/terraform plan.jpeg" alt="ejecucion de terraform plan">
-  <figcaption><em>Ejecución del comando terraform plan en la terminal para previsualizar los cambios de infraestructura.</em></figcaption>
-</figure>
-<br>
-<br>
-<figure>
-  <img src="Imagenes/Terraform plan 16 recursos.jpeg" alt="terraform plan muestra 16 recursos">
-  <figcaption><em>Resultado de la ejecución de terraform plan indicando un total de 16 recursos cloud listos para ser añadidos a la infraestructura de GCP.</em></figcaption>
-</figure>
-<br>
-<br>
-<figure>
-  <img src="Imagenes/terraform apply.jpeg" alt="terraform apply">
-  <figcaption><em>Ejecución del comando terraform apply iniciando la creación ordenada y en paralelo de los recursos declarados en GCP.</em></figcaption>
-</figure>
-<br>
-<br>
-<figure>
-  <img src="Imagenes/terraform apply yes.jpeg" alt="terraform apply yes">
-  <figcaption><em>Confirmación manual (yes) durante el comando terraform apply para autorizar la creación real de 16 recursos en Google Cloud.</em></figcaption>
-</figure>
-<br>
-<br>
-<figure>
-  <img src="Imagenes/16 recursos creados.jpeg" alt="terraform apply 16 recursos creados">
-  <figcaption><em>Finalización exitosa del despliegue: Salida de la terminal confirmando los 16 recursos cloud añadidos correctamente en GCP. y mostrando la direccion ip del balanceador de cargas</em></figcaption>
-</figure>
-<br>
+
+#### Despliegue de la infraestructura
+
+Se ejecutó `terraform plan` para validar la configuración y previsualizar los cambios que serían aplicados en Google Cloud. Terraform determinó la creación de 16 recursos necesarios para la arquitectura.
+
+Posteriormente, mediante `terraform apply`, se autorizó y ejecutó el despliegue de la infraestructura. Terraform creó los recursos respetando sus dependencias y aprovechando la ejecución en paralelo cuando fue posible.
+
+Al finalizar el proceso, los 16 recursos fueron aprovisionados correctamente y se obtuvo la dirección IP pública del balanceador de cargas para acceder a la aplicación.
 
 #### Fase de Inicializacion y tiempos de gracia.
 <br>
@@ -164,135 +141,142 @@ Después de clonar este repositorio, autenticarnos en los servicios de Google, i
 En este primer paso, si tomamos la dirección IP del balanceador y la abrimos en el navegador, veremos que la arquitectura temporalmente no responde. Esto es un comportamiento esperado, ya que la infraestructura se encuentra intencionalmente "congelada" por diseño para proteger el ciclo de vida de los recursos.
 <br>
 
-##### Esta decisión arquitectónica se apoya en tres configuraciones críticas:
-1. Initial Delay del Managed Instance Group (300s): Las instancias e2-micro tardan entre 2 y 3 minutos en descargar actualizaciones e instalar dependencias (Python, FastAPI). El Health Check hace pruebas cada 10 segundos y, si falla 3 veces, elimina la instancia. Para evitar incurrir en un loop infinito de creación y destrucción prematura, se configuró un delay de 300 segundos, dándole tiempo de gracia a la máquina para exponer el puerto 8080.
-2. Cooldown del Autoscaler (180s): Al instalar las dependencias, el uso de la CPU en una máquina tan pequeña sube naturalmente al 100%. Este cooldown evita que el autoscaler lea ese pico temporal como tráfico real y cree réplicas innecesarias (falsos positivos).
-3. Sleep en el Script de Estrés (300s): El monitor de métricas de GCP no diferencia entre "uso de CPU por instalación" y "uso de CPU por estrés". Por lo tanto, el script de arranque tiene un comando sleep 300 antes de ejecutar estresar.sh. Esto nos permite separar las métricas, esperar a que la instancia converja, y recién ahí disparar la CPU al 100% para observar cómo se activa el autoscaler de forma controlada.
-<br>
-<br>
-<figure>
-  <img src="Imagenes/ip no responde..jpeg" alt="la ip no responde nada">
-  <figcaption><em>Como se mencionó anteriormente al pegar y abrir la direccion IP que copiamos en la terminal, esta no responde.</em></figcaption>
-</figure>
-<br>
-<br>
-<figure>
-  <img src="Imagenes/instancia creada vista desde compute engine.jpeg" alt="vm solitaria">
-  <figcaption><em>Vista desde Compute Engine: una única instancia activa.</em></figcaption>
-</figure>
-<br>
-<br>
-<figure>
-  <img src="Imagenes/1 vm check mal.jpeg" alt="esta vm no responde">
-  <figcaption><em>ista desde Health Check: instancia en mal estado, comportamiento esperado.</em></figcaption>
-</figure>
-<br>
-<br>
-<figure>
-  <img src="Imagenes/1 instancia auto scaler mal estado.jpeg" alt="autoscaler espera">
-  <figcaption><em>Vista desde el Autoscaler: el sistema se encuentra en período de espera.</em></figcaption>
-</figure>
-<br>
+##### Convergencia inicial de la infraestructura
 
-### comportamiento esperado
-hasta ahora el comportamiento es el esperado y solo tenemos que esperar hasta que se terminen todos los tiempos 
-1. 180 segundos de cooldown para que el autoscaler funcione
-2. 300 segundos para que el health check empiece a chequear si la virtual machine responde
-3. 300 segundos de sleep para que la instancia comience a estresarse
+Hasta este punto, el comportamiento observado es el esperado. Solo resta esperar a que finalicen los tiempos de gracia configurados para cada componente:
 
-### pasalos 180 segundos de cooldown del autoscaler podemos ver como esta instancia ya responde
+1. 180 segundos de *cooldown* del autoscaler.
+2. 300 segundos de gracia para el health check.
+3. 300 segundos de espera (`sleep`) antes de iniciar la carga de CPU.
+
+###### Pasados los 180 segundos de cooldown del autoscaler
+
+La instancia ya se encuentra operativa y el autoscaler la considera saludable.
+
 <br>
 <figure>
   <img src="Imagenes/1 instancia autoscaler buen estado.jpeg" alt="autoscaler 1 ok">
-  <figcaption><em>si miramos desde autoscaler podemos ver como todavia ya responde</em></figcaption>
+  <figcaption><em>Vista del autoscaler mostrando que la instancia ya se encuentra operativa.</em></figcaption>
 </figure>
 <br>
 
-### pasados los 300 segundos del health check podemos ver como la instancia responde
+###### Pasados los 300 segundos del health check
+
+El health check confirma que la instancia responde correctamente.
+
 <br>
 <figure>
   <img src="Imagenes/1 vm check ok.jpeg" alt="health check 1 ok">
-  <figcaption><em>si miramos desde la vista de health check podemos ver como esta instancia ya responde</em></figcaption>
+  <figcaption><em>El health check confirma que la instancia responde correctamente.</em></figcaption>
 </figure>
 <br>
 
-#### en este punto si refrescamos la pestaña de nuestro navegador con la ip que nos proporciono terraform deberiamos ver una respuesta
+#### En este punto, si accedemos a la dirección IP proporcionada por Terraform y actualizamos el navegador, deberíamos recibir una respuesta válida de la aplicación.
 
-### pasados los 300 segundos de sleep podemos ver como la instancia trabaja al 100%
+###### Pasados los 300 segundos de espera (`sleep`)
+
+La carga artificial comienza a ejecutarse y la instancia alcanza el 100 % de utilización de CPU.
+
 <br>
 <figure>
   <img src="Imagenes/cpu al 100 desde ssh.jpeg" alt="top cpu 100">
-  <figcaption><em>si nos conectamos por ssh y ejecutamos "top" en la terminal podemos ver como la instancia esta trabajando al 100%</em></figcaption>
+  <figcaption><em>Conectados por SSH y utilizando el comando <code>top</code>, podemos verificar que la instancia está utilizando el 100 % de CPU.</em></figcaption>
 </figure>
 <br>
 
-### en este punto el autoscaler entra en panico y crea 5 copias
+###### El autoscaler detecta la carga y crea cinco instancias adicionales
+
+Al superarse el umbral configurado, el autoscaler inicia la creación de nuevas réplicas para absorber la carga.
+
 <br>
 <figure>
   <img src="Imagenes/5 instancias en mal estado desde autoscaler.jpeg" alt="5 instancias en mal estado">
-  <figcaption><em>podemos ver que se crearon 5 copias, todas estan desplegando</em></figcaption>
+  <figcaption><em>Se observa la creación de cinco nuevas instancias que aún se encuentran en proceso de inicialización.</em></figcaption>
 </figure>
 <br>
 
-### logicamente ninguna responde el health check 
+###### Las nuevas instancias todavía no responden al health check
+
+Este comportamiento es esperado, ya que las instancias aún se encuentran en proceso de inicialización.
+
 <br>
 <figure>
   <img src="Imagenes/5 instancias en mal estado otra vista.jpeg" alt="5 instancias en mal estado health check">
-  <figcaption><em>podemos ver como de estas 5 copias ninguna responde correctamente</em></figcaption>
+  <figcaption><em>Las nuevas instancias aún no completaron su proceso de arranque y, por lo tanto, todavía no responden correctamente.</em></figcaption>
 </figure>
 <br>
 
-### vista desde compute engine
+###### Vista desde Compute Engine
+
+Se observa un total de seis instancias administradas por el Managed Instance Group.
+
 <br>
 <figure>
   <img src="Imagenes/6 instancias desde compute engine.jpeg" alt="6 instancias creadas">
-  <figcaption><em>podemos ver el total de 6 instancias desde compute engine</em></figcaption>
+  <figcaption><em>Vista general mostrando las seis instancias administradas por el Managed Instance Group.</em></figcaption>
 </figure>
 <br>
 
-### comportamiento esperado
-el comportamiento es el mismo pero con 5 instancias extras, el siclo se repite
-1. 180 segundos de cooldown para que el autoscaler funcione
-2. 300 segundos para que el health check empiece a chequear si la virtual machine responde
-3. 300 segundos de sleep para que la instancia comience a estresarse
+##### Estado estable del clúster
 
-### vista desde autoscaler
+El comportamiento observado en las nuevas instancias es idéntico al de la instancia original. Cada una debe completar su proceso de inicialización antes de ser considerada saludable y comenzar a recibir tráfico.
+
+1. 180 segundos de *cooldown* del autoscaler.
+2. 300 segundos de gracia para el health check.
+3. 300 segundos de espera (`sleep`) antes de iniciar la carga de CPU.
+
+###### Vista desde el autoscaler
+
+El autoscaler informa que se alcanzó el número máximo de instancias configurado para el laboratorio.
+
 <br>
 <figure>
-  <img src="Imagenes/6 instancias desde autoscaler.jpeg" alt="6 ">
-  <figcaption><em>podemos ver como el autoscaler nos dice que las 6 instancias estan al 100% y que no puede crear mas ya que fue el limite que pusimos</em></figcaption>
+  <img src="Imagenes/6 instancias desde autoscaler.jpeg" alt="6 instancias">
+  <figcaption><em>El autoscaler informa que las seis instancias se encuentran bajo carga y que no es posible crear más réplicas debido al límite máximo configurado.</em></figcaption>
 </figure>
 <br>
 
-### el health check esta correcto en las 6 instancias
+###### Estado de los health checks
+
+Las seis instancias responden correctamente a las verificaciones de estado.
+
 <br>
 <figure>
   <img src="Imagenes/6 instancias ok desde healthcheck otra vista.jpeg" alt="6 instancias responde">
-  <figcaption><em>aca podemos ver como las 6 instancias responden correctamente</em></figcaption>
+  <figcaption><em>Todas las instancias responden correctamente a las verificaciones de estado.</em></figcaption>
 </figure>
 <br>
 
-#### si esperamos a que pasen los 300 segundos sleep y volvemos a la ip que tenemos abierta en nuestro navegar y refrescamos repetidamente, estas responde.
+#### Una vez finalizado el período de espera, al actualizar repetidamente la aplicación mediante la IP pública del balanceador, puede observarse cómo las solicitudes son distribuidas entre distintas instancias del grupo.
+
 <br>
 <br>
+
 <figure>
   <img src="Imagenes/respuesta 051w.jpeg" alt="la instancia 051w responde">
-  <figcaption><em>la instancia 051w responde</em></figcaption>
+  <figcaption><em>Respuesta generada por la instancia 051w.</em></figcaption>
 </figure>
+
 <br>
 <br>
+
 <figure>
-  <img src="Imagenes/respuesta 0frv.jpeg" alt="la instancias 0frv responde">
-  <figcaption><em>la instancia 0frv responde</em></figcaption>
+  <img src="Imagenes/respuesta 0frv.jpeg" alt="la instancia 0frv responde">
+  <figcaption><em>Respuesta generada por la instancia 0frv.</em></figcaption>
 </figure>
+
 <br>
 <br>
+
 <figure>
-  <img src="Imagenes/respuesta m6qk.jpeg" alt="la instancias m6qk responde">
-  <figcaption><em>la instancia m6qk responde</em></figcaption>
+  <img src="Imagenes/respuesta m6qk.jpeg" alt="la instancia m6qk responde">
+  <figcaption><em>Respuesta generada por la instancia m6qk.</em></figcaption>
 </figure>
+
 <br>
 <br>
+```
+
 
 ### siclo de vida de las VMs
 El despliegue alcanza su estado operativo a los 5 minutos. A los 10 minutos detona el autoescalado horizontal, alcanzando la capacidad máxima de 6 nodos. Tras finalizar el proceso de estrés de CPU (16 minutos), el sistema inicia una fase de escalado descendente (scale-down) para optimizar costos, regresando a 1 sola instancia tras el periodo de enfriamiento.
