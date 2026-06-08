@@ -693,7 +693,7 @@ Las reglas estrictas de la VPC custom sin IPs públicas bloqueaban tanto el trá
 Topología de red — aprovisionamiento de la subred itaca_proxy con el propósito obligatorio
 ```
 REGIONAL_MANAGED_PROXY:
-hclresource "google_compute_subnetwork" "itaca_proxy" {
+resource "google_compute_subnetwork" "itaca_proxy" {
   name    = "itaca-subnetwork-proxy"
   region  = var.region
   ip_cidr_range = "10.129.0.0/23"
@@ -704,7 +704,7 @@ hclresource "google_compute_subnetwork" "itaca_proxy" {
 ```
 Salida a internet — despliegue de Cloud NAT y Cloud Router para habilitar tráfico saliente manteniendo el aislamiento de la VPC.
 Control de ingress — regla de firewall que autoriza tráfico TCP al puerto 8080 exclusivamente a los rangos IP de los servidores de health check de Google:
-hclsource_ranges = ["35.191.0.0/16", "130.211.0.0/22"]
+source_ranges = ["35.191.0.0/16", "130.211.0.0/22"]
 ##### Lección aprendida
 El esquema EXTERNAL_MANAGED es el nuevo estándar para ALB regionales en GCP pero tiene requisitos de red más estrictos que el esquema clásico. La proxy subnet no es opcional, es un prerequisito arquitectónico del balanceador.
 
@@ -716,16 +716,19 @@ La VM arrancaba correctamente e instalaba las dependencias, pero al cabo de unos
 ##### Causa raíz
 El operador & envía el proceso al background pero lo mantiene como hijo del shell actual. Cuando el shell del startup script terminaba, el kernel enviaba SIGHUP a todos los procesos hijos, matándolos.
 Código problemático
-``` bashpython3 -m uvicorn main:app --host 0.0.0.0 --port 8080 --app-dir /home &
+```
+bashpython3 -m uvicorn main:app --host 0.0.0.0 --port 8080 --app-dir /home &
 sleep 300 && stress --cpu $(nproc) --timeout 960 &
 ```
 ##### Resolución implementada
 Uso de nohup para desconectar los procesos del shell padre, combinado con redirección de logs:
-``` bashpython3 -m uvicorn main:app --host 0.0.0.0 --port 8080 --app-dir /home &
+```
+bashpython3 -m uvicorn main:app --host 0.0.0.0 --port 8080 --app-dir /home &
 nohup /home/estresar.sh > /home/estresar.log 2>&1 &
 ```
 El script de estrés fue separado en un archivo independiente con heredoc de comillas simples para evitar interpolación prematura de variables:
-```bashcat > /home/estresar.sh << 'BASH_EOF'
+```
+bashcat > /home/estresar.sh << 'BASH_EOF'
 #!/bin/bash
 sleep 300
 stress --cpu $(nproc) --timeout 960
