@@ -1,22 +1,22 @@
-# Arquitectura Elastica y Alta Disponibilidad en GCP con Terraform
+# Arquitectura Elástica y Alta Disponibilidad en GCP con Terraform.
 
-### Resumen del proyecto
+### Resumen del proyecto.
 Arquitectura elástica y de alta disponibilidad desplegada en Google Cloud Platform mediante Terraform. El proyecto implementa una VPC privada, un Managed Instance Group regional con auto-healing, autoscaling basado en uso de CPU, Cloud NAT y un Application Load Balancer. <br>
 La capa de cómputo opera de forma aislada, manteniendo las instancias sin IP pública y accesibles únicamente mediante Identity-Aware Proxy (IAP). El objetivo fue diseñar una plataforma resiliente capaz de escalar automáticamente (scale-out) ante picos de demanda y regresar a un estado de bajo costo (scale-in) cuando la carga disminuye. <br>
-Durante el desarrollo, se documentaron incidentes reales de despliegue relacionados con el flapping del autoscaler, requisitos de red modernos (Envoy proxy subnet), startup scripts y dependencias implícitas en IaC.
+Durante el desarrollo, se documentaron incidentes reales de despliegue relacionados con el flapping del autoscaler, requisitos de red modernos (Envoy proxy subnet), startup scripts y dependencias implícitas entre recursos de Terraform.
 
-### Disclamer
+### Aviso importante.
 Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratorio. El diseño prioriza estrictamente el análisis del cómputo elástico y el comportamiento de la red por sobre la persistencia de datos, la cual será abordada en la Fase 2.
 
-## Diagrama de arquitectura visual
+## Diagrama de arquitectura visual.
 <figure>
   <img src="Imagenes/Diagrama.png" alt="Arquitectura fase 1 y fase 2">
   <figcaption><em>Arquitectura stateless — Fase 1. El componente Cloud SQL representa la capa de persistencia planificada para la Fase 2.</em></figcaption>
 </figure>
 
-### Stack tecnologico y Decisiones de diseño 
+### Stack tecnologico y Decisiones de Diseño.
 
-#### Stack Tecnologico 
+#### Stack Tecnológico. 
 - Infraestructura como Código: Terraform
 - Proveedor Cloud: Google Cloud Platform (GCP)
 - Cómputo Elástico: Compute Engine (e2-micro), Regional Managed Instance Group (MIG)
@@ -25,7 +25,7 @@ Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratori
 - Seguridad Zero-Trust: Identity-Aware Proxy (IAP)
 - Capa de Aplicación: Debian 11, Bash (Startup Scripts), Python 3, FastAPI, Uvicorn, Stress
 
-#### notas de diseño 
+#### Notas de Diseño.
 - Arquitectura Stateless (Fase 1): Esta primera versión fue diseñada de forma intencional sin capa de persistencia (Base de Datos) para enfocarnos única y puramente en validar el comportamiento del cómputo elástico y la distribución de red. La capa de datos se abordará en la Fase 2.
 - Recursos Planos vs. Módulos (Claridad Didáctica): Se optó por utilizar resources individuales de Terraform en lugar de módulos prefabricados. Esto garantiza un control granular sobre cada parámetro y aporta claridad didáctica, ya que cada bloque de código refleja de forma explícita un componente de la topología real.
 - Seguridad Zero-Trust y Acceso vía IAP: Las instancias carecen de IP pública y el puerto 22 (SSH) no está abierto a todo internet. La regla de firewall allow-ssh-itaca solo permite tráfico desde la red 35.235.240.0/20 (rango oficial de Identity-Aware Proxy de Google), mediando el acceso seguro sin necesidad de Bastion Hosts.
@@ -36,28 +36,27 @@ Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratori
 - Estabilidad de Métricas y Prevención de Flapping: Al usar máquinas pequeñas (e2-micro), el simple hecho de instalar dependencias eleva la CPU al 100%. Para evitar que el autoscaler lea esto como un "falso positivo" y cree réplicas innecesarias (flapping), se separó la fase de aprovisionamiento de la de carga real sincronizando tiempos lógicos: un initial_delay_sec de 300s en el MIG, un cooldown_period de 180s en el Autoscaler, y un sleep de 300s en el script de estrés.
 
 ### requisitos
-- **cuenta de Google Cloud Computing GCP** - un proyecto de GCP creado y activo, cuenta de facturacion (BIlling) vinculada al proyecto.
+- **cuenta de Google Cloud Computing GCP** - un proyecto de GCP creado y activo, cuenta de facturacion (Billing) vinculada al proyecto.
 - **APIs Habilitadas** - la api de compute engine habilitada en el proyecto.
-- **Herramientas de linea de comandos (CLI) y terraform** - terraform instalado en tu entorno local, Gcloud instalado y autenticado.
-- **Permisos de IAM** - tener los permisos en GCP para crear redes y maquinas virtuales.
+- **Herramientas de línea de comandos (CLI) y terraform** - terraform instalado en tu entorno local, Gcloud instalado y autenticado.
+- **Permisos de IAM** - tener los permisos en GCP para crear redes y máquinas virtuales.
 
 ### despliegue
-1. Clonar el repositorio: git clone [https://github.com/tu-usuario/tu-repo.git](https://github.com/Anon277ARG/Arquitectura-Elastica-y-Alta-Disponibilidad-en-GCP-con-Terraform.)
-2. autenticar en gcp: gcloud auth application-default login
-3. Configurar el proyecto: gcloud config set project cloud-lab-493
-4. iniciar terraform: terraform init
-5. verificar los cambios antes de aplicar: terraform plan
-6. PASO OPCIONAL, este paso solo es importante si estamos en un entorno Windows, en caso contrario se puede saltear ```(Get-Content main.tf -Raw) -replace "`r`n", "`n" | Set-Content main.tf -NoNewline ``` para asegurarnos que no hayan incompatibilidades entre el entorno windows y el linux de gcp
-7. aplicar la infraestructura: terraform apply
-8. Una vez obtenida la IP, abrí `http://<ip>` en el navegador. Durante los primeros 5 minutos la arquitectura no va a responder, 
-ese comportamiento está documentado en la sección de operaciones.
-9. Destruir el entorno cuando termine: terraform destroy
+1. Clonar el repositorio: git clone [https://github.com/tu-usuario/tu-repo.git](https://github.com/Anon277ARG/Arquitectura-Elastica-y-Alta-Disponibilidad-en-GCP-con-Terraform.).
+2. Autenticar en gcp: gcloud auth application-default login.
+3. Configurar el proyecto: gcloud config set project cloud-lab-493.
+4. Iniciar Terraform: terraform init.
+5. Verificar los cambios antes de aplicar: terraform plan.
+6. PASO OPCIONAL, este paso solo es importante si estamos en un entorno Windows, en caso contrario se puede saltear ```(Get-Content main.tf -Raw) -replace "`r`n", "`n" | Set-Content main.tf -NoNewline ``` para asegurarnos que no hayan incompatibilidades entre el entorno windows y el linux de gcp.
+7. Aplicar la infraestructura: terraform apply.
+8. Una vez obtenida la IP, abrí `http://<ip>` en el navegador. Durante los primeros 5 minutos la arquitectura no va a responder, ese comportamiento está documentado en la sección de operaciones.
+9. Destruir el entorno cuando termine: terraform destroy.
 
-#### Comportamiento Esperado del Sistema
+### Comportamiento Esperado del Sistema
 Esta sección describe el ciclo de vida completo de la arquitectura desde el momento del despliegue hasta el scale-down final. Cada comportamiento descripto es intencional y responde a decisiones de diseño documentadas en la sección de componentes.
 
 #### Resumen de tiempos del ciclo de vida
-- **0 min** — Terraform apply completo, infraestructura creada.
+- **0 - 5 min** — Terraform apply completo, infraestructura creada.
 - **5 min** — IP del balanceador sin respuesta, comportamiento esperado.
 - **~5 min** — Primera instancia en buen estado, IP comienza a responder.
 - **~5 min** — Script de estrés activa CPU al 100%.
@@ -78,7 +77,7 @@ La IP del balanceador no responde. Este es el comportamiento esperado.
 
 #### Fase 2 — Inicialización y tiempos de gracia (3 – 5 min)
 <br>
-El startup script finaliza la instalación y levanta uvicorn en el puerto 8080 con &.
+El startup script finaliza la instalación y levanta Uvicorn en el puerto 8080 con &.
 El proceso estresar.sh se lanza con nohup y entra en sleep 300, esperando en segundo plano.
 El health check comienza a evaluar la instancia cada 10 segundos en la ruta GET /health.
 El initial_delay_sec = 300 del MIG protege la instancia durante este período, evitando que sea marcada como unhealthy antes de estar lista.
@@ -100,7 +99,7 @@ El MIG crea 5 réplicas adicionales hasta alcanzar el máximo configurado (max_r
 Las 5 nuevas instancias repiten el ciclo de la Fase 1 y Fase 2 de forma simultánea.
 Durante este período las nuevas instancias están en mal estado en el health check, comportamiento esperado mientras completan su inicialización.
 Al cabo de aproximadamente 10 – 11 minutos desde el deploy inicial, las 6 instancias están en buen estado.
-Refrescando repetidamente http://<ip> en el navegador, el campo maquina cambia entre los hostnames de las 6 instancias, demostrando que el balanceador distribuye el tráfico entre todos los nodos activos.
+Refrescando repetidamente http://<ip> en el navegador, el campo máquina cambia entre los hostnames de las 6 instancias, demostrando que el balanceador distribuye el tráfico entre todos los nodos activos.
 
 
 #### Fase 4 — Estabilización y scale-down (21 – 30 min)
