@@ -410,7 +410,9 @@ output "ip_publica_balanceador" {
 
 ```
 </details>
-## operaciones
+<br>
+
+## operaciones 
 ### siguiendo las instrucciones descritas mas arriba vamos a desplegar esta arquitectura
 Despues de clonar este repositorio, autenticarnos en los servicios de google, iniciar terraform y solucionar incompatibilidades entre sistemas operativos, los pasos que se establecen son los siguientes
 - ```.\terraform.exe plan``` y ``` .\terraform.exe apply``` al usar estos comandos terraform le pregunta al proveedor si dichos recursos ya existen, trae el estado te la arquitectura actual y actualiza nuestro archivo ```terraform.tfstate``` documento que sirve como respaldo tambien crea un grafo de dependencias, terraform no puede crear una subred si primero no tiene una red.
