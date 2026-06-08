@@ -6,7 +6,7 @@ La capa de cómputo opera de forma aislada, manteniendo las instancias sin IP p�
 Durante el desarrollo, se documentaron incidentes reales de despliegue relacionados con el flapping del autoscaler, requisitos de red modernos (Envoy proxy subnet), startup scripts y dependencias implícitas en IaC.
 
 ### Disclamer
-Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratorio. Se ha priorizado el análisis del cómputo y las redes por sobre la persistencia de datos. Asimismo, la redacción de esta documentación conserva deliberadamente ciertos errores tipográficos o giros lingüísticos propios del autor para mantener un tono auténtico, humano y personal, alejándose de las estructuras generadas íntegramente por inteligencia artificial.
+Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratorio. El diseño prioriza estrictamente el análisis del cómputo elástico y el comportamiento de la red por sobre la persistencia de datos, la cual será abordada en la Fase 2.
 
 ## Diagrama de arquitectura visual
 <figure>
