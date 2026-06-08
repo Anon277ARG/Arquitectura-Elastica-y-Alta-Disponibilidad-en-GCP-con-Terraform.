@@ -1,14 +1,9 @@
 # Arquitectura Elastica y Alta Disponibilidad en GCP con Terraform
-## Fase 1 computo y redes
-Este repositorio contiene los codigos en terraform para desplegar una arquitectura elastica en Google CLoud Computing (GCP) el diseño esta enfocado en aislar la capa de computo del acceso publico y garantizar el escalado automatico ante picos de demanda.
 
-## objetivos
-El objetivo es crear una arquitectura elastica, escalable y funcional
-
-## componentes base de la arquitectura  
-- **elasticidad avanzada** implementacion de un Managed Instance Group MIG. con politicas de auto escalado basada en uso de CPU y auto-healing verificados mediante health checks dedicados.<br>
-- **distribucion de trafico** configuracion de un aplication load balancer para el balanceo de carga de solicitudes de red.<br>
-- **seguridad perimetral** diseño back end 100% aislado en una VPC custom. las instancias carecen de ip publica, con cloud nat para la descarga de actualizaciones de forma segura.<br>
+### Resumen del proyecto
+Arquitectura elástica y de alta disponibilidad desplegada en Google Cloud Platform mediante Terraform. El proyecto implementa una VPC privada, un Managed Instance Group regional con auto-healing, autoscaling basado en uso de CPU, Cloud NAT y un Application Load Balancer. <br>
+La capa de cómputo opera de forma aislada, manteniendo las instancias sin IP pública y accesibles únicamente mediante Identity-Aware Proxy (IAP). El objetivo fue diseñar una plataforma resiliente capaz de escalar automáticamente (scale-out) ante picos de demanda y regresar a un estado de bajo costo (scale-in) cuando la carga disminuye. <br>
+Durante el desarrollo, se documentaron incidentes reales de despliegue relacionados con el flapping del autoscaler, requisitos de red modernos (Envoy proxy subnet), startup scripts y dependencias implícitas en IaC.
 
 ### notas de diseño 
 - Arquitectura Stateless (Fase 1): Esta primera versión fue diseñada de forma intencional sin capa de persistencia (Base de Datos) para enfocarnos única y puramente en validar el comportamiento del cómputo elástico y la distribución de red. La capa de datos se abordará en la Fase 2.
