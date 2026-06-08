@@ -14,7 +14,18 @@ Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratori
   <figcaption><em>Arquitectura stateless — Fase 1. El componente Cloud SQL representa la capa de persistencia planificada para la Fase 2.</em></figcaption>
 </figure>
 
-### notas de diseño 
+### Stack tecnologico y Decisiones de diseño 
+
+#### Stack Tecnologico 
+- Infraestructura como Código: Terraform
+- Proveedor Cloud: Google Cloud Platform (GCP)
+- Cómputo Elástico: Compute Engine (e2-micro), Regional Managed Instance Group (MIG)
+- Balanceo de Carga: Application Load Balancer (External Managed)
+- Redes Perimetrales: Custom VPC, Cloud NAT, Cloud Router, Proxy Subnet
+- Seguridad Zero-Trust: Identity-Aware Proxy (IAP)
+- Capa de Aplicación: Debian 11, Bash (Startup Scripts), Python 3, FastAPI, Uvicorn, Stress
+
+#### notas de diseño 
 - Arquitectura Stateless (Fase 1): Esta primera versión fue diseñada de forma intencional sin capa de persistencia (Base de Datos) para enfocarnos única y puramente en validar el comportamiento del cómputo elástico y la distribución de red. La capa de datos se abordará en la Fase 2.
 - Recursos Planos vs. Módulos (Claridad Didáctica): Se optó por utilizar resources individuales de Terraform en lugar de módulos prefabricados. Esto garantiza un control granular sobre cada parámetro y aporta claridad didáctica, ya que cada bloque de código refleja de forma explícita un componente de la topología real.
 - Seguridad Zero-Trust y Acceso vía IAP: Las instancias carecen de IP pública y el puerto 22 (SSH) no está abierto a todo internet. La regla de firewall allow-ssh-itaca solo permite tráfico desde la red 35.235.240.0/20 (rango oficial de Identity-Aware Proxy de Google), mediando el acceso seguro sin necesidad de Bastion Hosts.
@@ -111,6 +122,7 @@ No interrumpir el proceso. Ejecutar Ctrl+C desincroniza el state de Terraform co
 Al finalizar, la terminal confirma la destrucción completa:
 
 Destroy complete! Resources: 16 destroyed.
+
 
 ## Componentes
 <details>
