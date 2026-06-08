@@ -45,6 +45,17 @@ ese comportamiento está documentado en la sección de operaciones.
 ### Comportamiento Esperado del Sistema
 Esta sección describe el ciclo de vida completo de la arquitectura desde el momento del despliegue hasta el scale-down final. Cada comportamiento descripto es intencional y responde a decisiones de diseño documentadas en la sección de componentes.
 
+#### Resumen de tiempos del ciclo de vida
+- **0 min** — Terraform apply completo, infraestructura creada.
+- **5 min** — IP del balanceador sin respuesta, comportamiento esperado.
+- **~5 min** — Primera instancia en buen estado, IP comienza a responder.
+- **~5 min** — Script de estrés activa CPU al 100%.
+- **~6 – 7 min** — Autoscaler detecta la carga y escala a 6 instancias.
+- **~10 – 11 min** — 6 instancias en buen estado, balanceo activo entre todos los nodos.
+- **~21 min** — Proceso de estrés finaliza, CPU cae.
+- **~24 min** — Scale-down inicia.
+- **~27 – 30 min** — Sistema regresa a 1 instancia activa.
+
 #### Fase 1 — Despliegue (0 – 3 min)
 <br>
 terraform apply crea los 16 recursos en GCP en orden según el grafo de dependencias.
@@ -100,9 +111,10 @@ No interrumpir el proceso. Ejecutar Ctrl+C desincroniza el state de Terraform co
 Al finalizar, la terminal confirma la destrucción completa:
 
 Destroy complete! Resources: 16 destroyed.
-   
-## Componentes
 
+## Componentes
+<deatails>
+<summary> componentes de la arquitectura</summary>
 ### redes
 - red VPC privada con el nombre de "itaca-network" creada en Santiago, la unica configuracion relevante aca es que se desactivo la creacion automatica de subredes.
   ```
@@ -396,6 +408,7 @@ output "ip_publica_balanceador" {
 }
 
 ```
+</details>
 ## operaciones
 ### siguiendo las instrucciones descritas mas arriba vamos a desplegar esta arquitectura
 Despues de clonar este repositorio, autenticarnos en los servicios de google, iniciar terraform y solucionar incompatibilidades entre sistemas operativos, los pasos que se establecen son los siguientes
