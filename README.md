@@ -113,8 +113,9 @@ Al finalizar, la terminal confirma la destrucción completa:
 Destroy complete! Resources: 16 destroyed.
 
 ## Componentes
-<deatails>
+<details>
 <summary> componentes de la arquitectura</summary>
+<br>
 ### redes
 - red VPC privada con el nombre de "itaca-network" creada en Santiago, la unica configuracion relevante aca es que se desactivo la creacion automatica de subredes.
   ```
