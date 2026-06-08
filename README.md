@@ -742,7 +742,8 @@ nohup desconecta el proceso del shell padre, permitiendo que sobreviva cuando el
 
 ##### Síntoma
 Al ejecutar terraform destroy, GCP devolvía el siguiente error:
-``` Error: googleapi: Error 400: The subnetwork resource 'itaca-subnetwork-proxy' is already being used by 'itaca-forwarding-rule', resourceInUseByAnotherResource
+```
+Error: googleapi: Error 400: The subnetwork resource 'itaca-subnetwork-proxy' is already being used by 'itaca-forwarding-rule', resourceInUseByAnotherResource
 ```
 La infraestructura quedaba en un estado parcialmente destruido con el state de Terraform desincronizado de GCP.
 
@@ -752,7 +753,8 @@ Terraform intentaba destruir la proxy subnet antes de destruir el forwarding rul
 ##### Resolución implementada
 Declaración explícita de dependencia mediante depends_on en el forwarding rule:
 
-```hclresource "google_compute_forwarding_rule" "itaca-forwarding-rule" {
+```
+resource "google_compute_forwarding_rule" "itaca-forwarding-rule" {
   name                  = "itaca-forwarding-rule"
   region                = var.region
   target                = google_compute_region_target_http_proxy.itaca_target_proxy.id
