@@ -122,10 +122,10 @@ Al finalizar, la terminal confirma la destrucción completa:
 
 Destroy complete! Resources: 16 destroyed.
 
-## operaciones 
-### siguiendo las instrucciones descritas mas arriba vamos a desplegar esta arquitectura
-Despues de clonar este repositorio, autenticarnos en los servicios de google, iniciar terraform y solucionar incompatibilidades entre sistemas operativos, los pasos que se establecen son los siguientes
-- ```.\terraform.exe plan``` y ``` .\terraform.exe apply``` al usar estos comandos terraform le pregunta al proveedor si dichos recursos ya existen, trae el estado te la arquitectura actual y actualiza nuestro archivo ```terraform.tfstate``` documento que sirve como respaldo tambien crea un grafo de dependencias, terraform no puede crear una subred si primero no tiene una red.
+### operaciones 
+#### Siguiendo las instrucciones descritas más arriba vamos a desplegar esta arquitectura.
+Después de clonar este repositorio, autenticarnos en los servicios de Google, iniciar Terraform y solucionar incompatibilidades entre sistemas operativos, los pasos que se establecen son los siguientes
+- ```.\terraform.exe plan``` y ``` .\terraform.exe apply``` al usar estos comandos terraform le pregunta al proveedor si dichos recursos ya existen, trae el estado de la arquitectura actual y actualiza nuestro archivo ```terraform.tfstate``` documento que registra el estado actual de nuestra arquitectura, también crea un grafo de dependencias, terraform no puede crear una subred si primero no tiene una red.
   <br>
   <br>
 <figure>
@@ -158,13 +158,13 @@ Despues de clonar este repositorio, autenticarnos en los servicios de google, in
 </figure>
 <br>
 
-### Fase de Inicializacion y tiempos de gracias
+#### Fase de Inicializacion y tiempos de gracia.
 <br>
 
 En este primer paso, si tomamos la dirección IP del balanceador y la abrimos en el navegador, veremos que la arquitectura temporalmente no responde. Esto es un comportamiento esperado, ya que la infraestructura se encuentra intencionalmente "congelada" por diseño para proteger el ciclo de vida de los recursos.
 <br>
 
-#### Esta decisión arquitectónica se apoya en tres configuraciones críticas:
+##### Esta decisión arquitectónica se apoya en tres configuraciones críticas:
 1. Initial Delay del Managed Instance Group (300s): Las instancias e2-micro tardan entre 2 y 3 minutos en descargar actualizaciones e instalar dependencias (Python, FastAPI). El Health Check hace pruebas cada 10 segundos y, si falla 3 veces, elimina la instancia. Para evitar incurrir en un loop infinito de creación y destrucción prematura, se configuró un delay de 300 segundos, dándole tiempo de gracia a la máquina para exponer el puerto 8080.
 2. Cooldown del Autoscaler (180s): Al instalar las dependencias, el uso de la CPU en una máquina tan pequeña sube naturalmente al 100%. Este cooldown evita que el autoscaler lea ese pico temporal como tráfico real y cree réplicas innecesarias (falsos positivos).
 3. Sleep en el Script de Estrés (300s): El monitor de métricas de GCP no diferencia entre "uso de CPU por instalación" y "uso de CPU por estrés". Por lo tanto, el script de arranque tiene un comando sleep 300 antes de ejecutar estresar.sh. Esto nos permite separar las métricas, esperar a que la instancia converja, y recién ahí disparar la CPU al 100% para observar cómo se activa el autoscaler de forma controlada.
@@ -172,25 +172,25 @@ En este primer paso, si tomamos la dirección IP del balanceador y la abrimos en
 <br>
 <figure>
   <img src="Imagenes/ip no responde..jpeg" alt="la ip no responde nada">
-  <figcaption><em>como mencione mas arriba al pegar y abrir la direccion ip que copiamos en la terminal, esta no responde.</em></figcaption>
+  <figcaption><em>Como se mencionó anteriormente al pegar y abrir la direccion IP que copiamos en la terminal, esta no responde.</em></figcaption>
 </figure>
 <br>
 <br>
 <figure>
   <img src="Imagenes/instancia creada vista desde compute engine.jpeg" alt="vm solitaria">
-  <figcaption><em>si miramos desde compute engine vamos a ver una unica instancia online, ignorar las otras dos intancias</em></figcaption>
+  <figcaption><em>Vista desde Compute Engine: una única instancia activa.</em></figcaption>
 </figure>
 <br>
 <br>
 <figure>
   <img src="Imagenes/1 vm check mal.jpeg" alt="esta vm no responde">
-  <figcaption><em>si miramos desde health check esta instancia esta en mal estado, comportamiento esperado</em></figcaption>
+  <figcaption><em>ista desde Health Check: instancia en mal estado, comportamiento esperado.</em></figcaption>
 </figure>
 <br>
 <br>
 <figure>
   <img src="Imagenes/1 instancia auto scaler mal estado.jpeg" alt="autoscaler espera">
-  <figcaption><em>si miramos desde autoscaler podemos ver como todavia esta esperando</em></figcaption>
+  <figcaption><em>Vista desde el Autoscaler: el sistema se encuentra en período de espera.</em></figcaption>
 </figure>
 <br>
 
