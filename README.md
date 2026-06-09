@@ -124,7 +124,7 @@ Al finalizar, la terminal confirma la destrucción completa:
 Destroy complete! Resources: 16 destroyed.
 
 ### operaciones 
-#### Siguiendo las instrucciones descritas más arriba vamos a desplegar esta arquitectura.
+#### Siguiendo las instrucciones descritas más arriba vamos a desplegar esta arquitectura con visuales que muestran los resultados esperados.
 Después de clonar este repositorio, autenticarnos en los servicios de Google, iniciar Terraform y solucionar incompatibilidades entre sistemas operativos, los pasos que se establecen son los siguientes
 - ```.\terraform.exe plan``` y ``` .\terraform.exe apply``` al usar estos comandos terraform le pregunta al proveedor si dichos recursos ya existen, trae el estado de la arquitectura actual y actualiza nuestro archivo ```terraform.tfstate``` documento que registra el estado actual de nuestra arquitectura, también crea un grafo de dependencias, terraform no puede crear una subred si primero no tiene una red.
 
@@ -301,7 +301,7 @@ Una vez finalizadas las pruebas, se recomienda eliminar todos los recursos cread
 <br>
 <br>
 
-#### Notas de Diseño.
+### Notas de Diseño.
 - Arquitectura Stateless (Fase 1): Esta primera versión fue diseñada de forma intencional sin capa de persistencia (Base de Datos) para enfocarnos única y puramente en validar el comportamiento del cómputo elástico y la distribución de red. La capa de datos se abordará en la Fase 2.
 - Recursos Planos vs. Módulos (Claridad Didáctica): Se optó por utilizar resources individuales de Terraform en lugar de módulos prefabricados. Esto garantiza un control granular sobre cada parámetro y aporta claridad didáctica, ya que cada bloque de código refleja de forma explícita un componente de la topología real.
 - Seguridad Zero-Trust y Acceso vía IAP: Las instancias carecen de IP pública y el puerto 22 (SSH) no está abierto a todo internet. La regla de firewall allow-ssh-itaca solo permite tráfico desde la red 35.235.240.0/20 (rango oficial de Identity-Aware Proxy de Google), mediando el acceso seguro sin necesidad de Bastion Hosts.
@@ -314,7 +314,7 @@ Una vez finalizadas las pruebas, se recomienda eliminar todos los recursos cread
 ### Componentes
 
 <details>
-<summary>Descripción detallada de los componentes de la arquitectura</summary>
+<summary>Descripción detallada uno a uno de los componentes de la arquitectura</summary>
 
 <br>
 
@@ -623,7 +623,7 @@ output "ip_publica_balanceador" {
 </details>
 <br>
 
-## FinOps y Análisis de Costos (Estimación Mensual)
+### FinOps y Análisis de Costos (Estimación Mensual)
 La adopción de la Infraestructura como Código (IaC) permite un despliegue ágil, pero conlleva la responsabilidad de gestionar el presupuesto (FinOps). A continuación, se presenta un desglose de los costos operativos si esta arquitectura se mantuviera encendida 24/7 durante un mes (730 horas) en la región southamerica-west1 (Santiago):
 
 1. Costos Base de Red y Balanceo (Cargos Fijos)
@@ -652,8 +652,8 @@ Debido a que este entorno está diseñado con fines de laboratorio y pruebas de 
 
 El costo real de ejecutar el laboratorio completo documentado en este repositorio (despliegue, 15 minutos de estrés al 100% de capacidad y destrucción total) es inferior a $0.10 USD, demostrando un uso altamente eficiente de los recursos de la nube.
 
-## Registro de Incidentes y Resolución de Problemas
-### Aprendizajes Principales del Proyecto
+### Registro de Incidentes y Resolución de Problemas
+#### Aprendizajes Principales del Proyecto
 - **Alta Disponibilidad:** Configuración y gestión de Managed Instance Groups (MIG) regionales.
 - **Métricas y Autoscaling:** Sincronización de tiempos lógicos (Auto-healing vs. Autoscaling) para evitar *flapping* durante el aprovisionamiento de instancias.
 - **Networking Avanzado en GCP:** Requisitos obligatorios de topología y subredes dedicadas (Proxy Envoy) para Application Load Balancers modernos.
@@ -780,5 +780,16 @@ resource "google_compute_forwarding_rule" "itaca-forwarding-rule" {
 Terraform infiere dependencias automáticamente solo cuando hay referencias directas entre recursos. Cuando la dependencia es implícita (dos recursos que GCP relaciona internamente pero que no están referenciados entre sí en el código), hay que declararla explícitamente con depends_on. Esto aplica especialmente al orden de destrucción.
 
 --- 
-## colofon - Itaca
+### colofon el por que de itaca Itaca
 durante el documento se lee el nombre "Itaca", Itaca hace alusion al hogar del protagonista de la Iliada de Homero Odiseo (Ὀδυσσεύς) en su nombre griego rey de Itaca donde su amada esposa Penelope(Πηνελόπεια) junto a su hijo Telemaco(Τηλέμαχος) lo esperaban ansiosamente dia a dia, los Romanos como es sabido en la historia tomaron mucho de la cultura griega y lo adaptaron Odiseo se volvio Ulysses, Penelope se volvio Penelopea y Telemaco se volvio Telemachus, todos conocemos la historia de la Iliada, no es lo importane, lo importante de esto es el origen etimologico de la palabra Penelope, este origen se discute, se cree que Pene viene de "hilo, tejido, Trama" por otro lado Florencia viene del Latin, de alguna parte del centro de italia y significa "florida", "en flor" o "aquella que da frutos y florece". esto es importante por que al igual que penelope y odiseo, compartimos una vida de amor juntos, vos y maximo - mi telemaco que al igual que en la historia era solo un bebé cuando esta odisea empezó son mi motor, el hilo con el que hacemos fuerte nuestra Itaca, nuestro hogar de calor, seguridad y felicidad.
+<br>
+<br>
+### contacto
+<p align="center">
+  Do you want to connect with me or learn more about my projects on Google Cloud? <br>
+  <a href="https://www.linkedin.com/in/ulises-acu%C3%B1a-bianchi-6a36961b4/" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn Profile">
+  </a>
+  <br>
+  <sub>developed with ❤️ by Ulises Acuña Bianchi - 2026</sub>
+</p>
