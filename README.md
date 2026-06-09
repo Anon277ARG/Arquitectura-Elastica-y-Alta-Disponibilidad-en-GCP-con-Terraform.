@@ -401,7 +401,7 @@ resource "google_compute_router_nat" "itaca_nat" {
 ### Firewall
 - reglas de firewall con el nombre "itaca-firewall, itaca-health-check, allow-ssh-itaca" 
 - todas las reglas con el mismo tag para evitar confuciones "itaca-firewalls"
-#### abieros los puertos y las ips
+#### abiertos los puertos y las ips
 - "22 y 35.235.240.0/20" para la conexions ssh
 - "8080 y 10.129.0.0/23" para la conexion del proxy con el load balancer
 - "8080 y 35.191.0.0/16, 130.211.0.0/22" para los health check
@@ -797,7 +797,9 @@ Terraform infiere dependencias automáticamente solo cuando hay referencias dire
 
 --- 
 ### colofon el por que de itaca Itaca
-durante el documento se lee el nombre "Itaca", Itaca hace alusion al hogar del protagonista de la Iliada de Homero Odiseo (Ὀδυσσεύς) en su nombre griego rey de Itaca donde su amada esposa Penelope(Πηνελόπεια) junto a su hijo Telemaco(Τηλέμαχος) lo esperaban ansiosamente dia a dia, los Romanos como es sabido en la historia tomaron mucho de la cultura griega y lo adaptaron Odiseo se volvio Ulysses, Penelope se volvio Penelopea y Telemaco se volvio Telemachus, todos conocemos la historia de la Iliada, no es lo importane, lo importante de esto es el origen etimologico de la palabra Penelope, este origen se discute, se cree que Pene viene de "hilo, tejido, Trama" por otro lado Florencia viene del Latin, de alguna parte del centro de italia y significa "florida", "en flor" o "aquella que da frutos y florece". esto es importante por que al igual que penelope y odiseo, compartimos una vida de amor juntos, vos y maximo - mi telemaco que al igual que en la historia era solo un bebé cuando esta odisea empezó son mi motor, el hilo con el que hacemos fuerte nuestra Itaca, nuestro hogar de calor, seguridad y felicidad.
+Durante el documento se lee el nombre "Ítaca". Ítaca hace alusión al hogar del protagonista de la Ilíada de Homero, Odiseo (Ὀδυσσεύς en griego), rey de Ítaca, donde su amada esposa Penélope (Πηνελόπεια) junto a su hijo Telémaco (Τηλέμαχος) lo esperaban ansiosamente día a día. Los romanos, como es sabido en la historia, tomaron mucho de la cultura griega y lo adaptaron: Odiseo se volvió Ulises, Penélope se volvió Penelopea y Telémaco se volvió Telemachus. Todos conocemos la historia de la Ilíada, pero eso no es lo importante.
+
+Lo importante de esto es el origen etimológico de la palabra Penélope. Aunque se discute, se cree que "Pene" viene de "hilo, tejido, trama". Por otro lado, Florencia viene del latín, de alguna parte del centro de Italia, y significa "florida", "en flor" o "aquella que da frutos y florece". Esto es importante porque, al igual que Penélope y Odiseo, compartimos una vida de amor juntos. Vos y Máximo —mi Telémaco, que al igual que en la historia era solo un bebé cuando esta odisea empezó— son mi motor, el hilo con el que hacemos fuerte nuestra Ítaca: nuestro hogar de calor, seguridad y felicidad.
 <br>
 <br>
 ### contacto
