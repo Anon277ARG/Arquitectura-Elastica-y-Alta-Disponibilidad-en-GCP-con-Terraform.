@@ -19,6 +19,22 @@ Arquitectura elástica y de alta disponibilidad desplegada en Google Cloud Platf
 ### Aviso importante.
 Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratorio. El diseño prioriza estrictamente el análisis del cómputo elástico y el comportamiento de la red por sobre la persistencia de datos, la cual será abordada en la Fase 2.
 
+## Índice
+1. [Diagrama de arquitectura visual](#diagrama-de-arquitectura-visual)
+2. [Stack tecnologico y Decisiones de Diseño](#stack-tecnologico-y-decisiones-de-diseño)
+3. [Requisitos](#requisitos)
+4. [Despliegue](#despliegue)
+5. [Comportamiento Esperado del Sistema](#comportamiento-esperado-del-sistema)
+6. [Operaciones](#operaciones)
+7. [Ciclo de vida de las VMs](#ciclo-de-vida-de-las-vms)
+8. [Destrucción de la infraestructura](#destrucción-de-la-infraestructura)
+9. [Notas de Diseño](#notas-de-diseño)
+10. [Componentes](#componentes)
+11. [FinOps y Análisis de Costos (Estimación Mensual)](#finops-y-análisis-de-costos-estimación-mensual)
+12. [Registro de Incidentes y Resolución de Problemas](#registro-de-incidentes-y-resolución-de-problemas)
+13. [Colofón el por que de itaca Itaca](#colofon-el-por-que-de-itaca-itaca)
+14. [Contacto](#contacto)
+
 ## Diagrama de arquitectura visual.
 <figure>
   <img src="Imagenes/Diagrama.png" alt="Arquitectura fase 1 y fase 2">
