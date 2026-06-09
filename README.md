@@ -1,9 +1,20 @@
 # Arquitectura Elástica y Alta Disponibilidad en GCP con Terraform.
 
-### Resumen del proyecto.
-Arquitectura elástica y de alta disponibilidad desplegada en Google Cloud Platform mediante Terraform. El proyecto implementa una VPC privada, un Managed Instance Group regional con auto-healing, autoscaling basado en uso de CPU, Cloud NAT y un Application Load Balancer. <br>
-La capa de cómputo opera de forma aislada, manteniendo las instancias sin IP pública y accesibles únicamente mediante Identity-Aware Proxy (IAP). El objetivo fue diseñar una plataforma resiliente capaz de escalar automáticamente (scale-out) ante picos de demanda y regresar a un estado de bajo costo (scale-in) cuando la carga disminuye. <br>
-Durante el desarrollo, se documentaron incidentes reales de despliegue relacionados con el flapping del autoscaler, requisitos de red modernos (Envoy proxy subnet), startup scripts y dependencias implícitas entre recursos de Terraform.
+### Resumen del proyecto
+Arquitectura elástica y de alta disponibilidad desplegada en Google Cloud Platform mediante Terraform. El objetivo principal fue diseñar una plataforma resiliente capaz de escalar automáticamente (*scale-out*) ante picos de demanda y regresar a un estado de bajo costo (*scale-in*) cuando la carga disminuye.
+
+**Características Principales:**
+- **Aislamiento y Zero-Trust:** VPC privada sin IPs públicas, acceso seguro mediante IAP y salida a internet vía Cloud NAT.
+- **Cómputo Elástico:** Regional Managed Instance Group (MIG) con Auto-healing.
+- **Autoscaling:** Basado en umbrales de uso de CPU.
+- **Balanceo de Nueva Generación:** External Managed Application Load Balancer (Proxy Envoy).
+
+**Resultados Obtenidos:**
+- Escalado dinámico de 1 a 6 instancias validado mediante pruebas de estrés.
+- Tolerancia a fallos con distribución multi-zona.
+- Infraestructura 100% reproducible mediante código (IaC).
+
+*Durante el desarrollo de este laboratorio, se documentaron incidentes reales de despliegue relacionados con el flapping del autoscaler, requisitos de red modernos, startup scripts y dependencias implícitas en Terraform, los cuales se detallan en la sección de Troubleshooting.*
 
 ### Aviso importante.
 Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratorio. El diseño prioriza estrictamente el análisis del cómputo elástico y el comportamiento de la red por sobre la persistencia de datos, la cual será abordada en la Fase 2.
@@ -24,16 +35,6 @@ Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratori
 - Redes Perimetrales: Custom VPC, Cloud NAT, Cloud Router, Proxy Subnet
 - Seguridad Zero-Trust: Identity-Aware Proxy (IAP)
 - Capa de Aplicación: Debian 11, Bash (Startup Scripts), Python 3, FastAPI, Uvicorn, Stress
-
-#### Notas de Diseño.
-- Arquitectura Stateless (Fase 1): Esta primera versión fue diseñada de forma intencional sin capa de persistencia (Base de Datos) para enfocarnos única y puramente en validar el comportamiento del cómputo elástico y la distribución de red. La capa de datos se abordará en la Fase 2.
-- Recursos Planos vs. Módulos (Claridad Didáctica): Se optó por utilizar resources individuales de Terraform en lugar de módulos prefabricados. Esto garantiza un control granular sobre cada parámetro y aporta claridad didáctica, ya que cada bloque de código refleja de forma explícita un componente de la topología real.
-- Seguridad Zero-Trust y Acceso vía IAP: Las instancias carecen de IP pública y el puerto 22 (SSH) no está abierto a todo internet. La regla de firewall allow-ssh-itaca solo permite tráfico desde la red 35.235.240.0/20 (rango oficial de Identity-Aware Proxy de Google), mediando el acceso seguro sin necesidad de Bastion Hosts.
-- Topología de Red Aislada (Custom VPC): Se desactivó la creación automática de subredes (auto_create_subnetworks = false) para evitar solapamientos de IP. La salida a internet de las VMs para descargar paquetes de sistema se resolvió usando Cloud NAT y Cloud Router, manteniendo el clúster 100% aislado.
-- Alta Disponibilidad Multi-Zona (Regional MIG): El Managed Instance Group no es zonal, es Regional. Al distribuir las políticas en múltiples zonas (southamerica-west1-a y b), se garantiza que si un centro de datos entero de Google experimenta una interrupción, la arquitectura siga operando.
-- Balanceo de Carga de Nueva Generación y Subred Proxy: Para implementar el Load Balancer HTTP regional (EXTERNAL_MANAGED), Google Cloud exige una subred dedicada. Se creó itaca_proxy con el propósito REGIONAL_MANAGED_PROXY, aislando el tráfico de los proxies (Envoy) del tráfico interno de las VMs.
-- Infraestructura Inmutable (Startup Scripts): Se utilizó el patrón de Startup Script inyectado en la Metadata. Las instancias nacen limpias (imagen base de Debian 11) y se autoconfiguran al bootear instalando FastAPI y Uvicorn, facilitando la rotación de nodos ante futuras actualizaciones de la API.
-- Estabilidad de Métricas y Prevención de Flapping: Al usar máquinas pequeñas (e2-micro), el simple hecho de instalar dependencias eleva la CPU al 100%. Para evitar que el autoscaler lea esto como un "falso positivo" y cree réplicas innecesarias (flapping), se separó la fase de aprovisionamiento de la de carga real sincronizando tiempos lógicos: un initial_delay_sec de 300s en el MIG, un cooldown_period de 180s en el Autoscaler, y un sleep de 300s en el script de estrés.
 
 ### requisitos
 - **cuenta de Google Cloud Computing GCP** - un proyecto de GCP creado y activo, cuenta de facturacion (Billing) vinculada al proyecto.
@@ -299,6 +300,16 @@ Una vez finalizadas las pruebas, se recomienda eliminar todos los recursos cread
 </figure>
 <br>
 <br>
+
+#### Notas de Diseño.
+- Arquitectura Stateless (Fase 1): Esta primera versión fue diseñada de forma intencional sin capa de persistencia (Base de Datos) para enfocarnos única y puramente en validar el comportamiento del cómputo elástico y la distribución de red. La capa de datos se abordará en la Fase 2.
+- Recursos Planos vs. Módulos (Claridad Didáctica): Se optó por utilizar resources individuales de Terraform en lugar de módulos prefabricados. Esto garantiza un control granular sobre cada parámetro y aporta claridad didáctica, ya que cada bloque de código refleja de forma explícita un componente de la topología real.
+- Seguridad Zero-Trust y Acceso vía IAP: Las instancias carecen de IP pública y el puerto 22 (SSH) no está abierto a todo internet. La regla de firewall allow-ssh-itaca solo permite tráfico desde la red 35.235.240.0/20 (rango oficial de Identity-Aware Proxy de Google), mediando el acceso seguro sin necesidad de Bastion Hosts.
+- Topología de Red Aislada (Custom VPC): Se desactivó la creación automática de subredes (auto_create_subnetworks = false) para evitar solapamientos de IP. La salida a internet de las VMs para descargar paquetes de sistema se resolvió usando Cloud NAT y Cloud Router, manteniendo el clúster 100% aislado.
+- Alta Disponibilidad Multi-Zona (Regional MIG): El Managed Instance Group no es zonal, es Regional. Al distribuir las políticas en múltiples zonas (southamerica-west1-a y b), se garantiza que si un centro de datos entero de Google experimenta una interrupción, la arquitectura siga operando.
+- Balanceo de Carga de Nueva Generación y Subred Proxy: Para implementar el Load Balancer HTTP regional (EXTERNAL_MANAGED), Google Cloud exige una subred dedicada. Se creó itaca_proxy con el propósito REGIONAL_MANAGED_PROXY, aislando el tráfico de los proxies (Envoy) del tráfico interno de las VMs.
+- Infraestructura Inmutable (Startup Scripts): Se utilizó el patrón de Startup Script inyectado en la Metadata. Las instancias nacen limpias (imagen base de Debian 11) y se autoconfiguran al bootear instalando FastAPI y Uvicorn, facilitando la rotación de nodos ante futuras actualizaciones de la API.
+- Estabilidad de Métricas y Prevención de Flapping: Al usar máquinas pequeñas (e2-micro), el simple hecho de instalar dependencias eleva la CPU al 100%. Para evitar que el autoscaler lea esto como un "falso positivo" y cree réplicas innecesarias (flapping), se separó la fase de aprovisionamiento de la de carga real sincronizando tiempos lógicos: un initial_delay_sec de 300s en el MIG, un cooldown_period de 180s en el Autoscaler, y un sleep de 300s en el script de estrés.
 
 ### Componentes
 
@@ -642,7 +653,12 @@ Debido a que este entorno está diseñado con fines de laboratorio y pruebas de 
 El costo real de ejecutar el laboratorio completo documentado en este repositorio (despliegue, 15 minutos de estrés al 100% de capacidad y destrucción total) es inferior a $0.10 USD, demostrando un uso altamente eficiente de los recursos de la nube.
 
 ## Registro de Incidentes y Resolución de Problemas
-
+### Aprendizajes Principales del Proyecto
+- **Alta Disponibilidad:** Configuración y gestión de Managed Instance Groups (MIG) regionales.
+- **Métricas y Autoscaling:** Sincronización de tiempos lógicos (Auto-healing vs. Autoscaling) para evitar *flapping* durante el aprovisionamiento de instancias.
+- **Networking Avanzado en GCP:** Requisitos obligatorios de topología y subredes dedicadas (Proxy Envoy) para Application Load Balancers modernos.
+- **Terraform Avanzado:** Control del ciclo de vida de los recursos y manejo de dependencias implícitas (`depends_on`).
+- **Troubleshooting Real:** Depuración de procesos huérfanos en Linux (`nohup`) y resolución de incompatibilidades de ejecución de scripts entre Windows y Linux (CRLF vs LF).
 #### Incidente 1 — Inestabilidad en el ciclo de vida del Managed Instance Group (Flapping)
 
 ##### Síntoma
