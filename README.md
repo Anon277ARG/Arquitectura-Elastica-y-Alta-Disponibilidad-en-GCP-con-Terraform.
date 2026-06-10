@@ -1,5 +1,11 @@
 # Arquitectura Elástica y Alta Disponibilidad en GCP con Terraform.
 
+![Terraform](https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)
+![GCP](https://img.shields.io/badge/Google_Cloud-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Debian](https://img.shields.io/badge/Debian-A81D33?style=for-the-badge&logo=debian&logoColor=white)
+![IaC](https://img.shields.io/badge/IaC-2e7d32?style=for-the-badge&logo=files&logoColor=white)
+
 ### Resumen del proyecto
 Arquitectura elástica y de alta disponibilidad desplegada en Google Cloud Platform mediante Terraform. El objetivo principal fue diseñar una plataforma resiliente capaz de escalar automáticamente (*scale-out*) ante picos de demanda y regresar a un estado de bajo costo (*scale-in*) cuando la carga disminuye.
 
