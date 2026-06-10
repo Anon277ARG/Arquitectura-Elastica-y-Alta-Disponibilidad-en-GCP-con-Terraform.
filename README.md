@@ -42,10 +42,12 @@ Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratori
 14. [Contacto](#contacto)
 
 ## Diagrama de arquitectura visual.
-<figure>
-  <img src="Imagenes/Diagrama.png" alt="Arquitectura fase 1 y fase 2">
-  <figcaption><em>Arquitectura stateless — Fase 1. El componente Cloud SQL representa la capa de persistencia planificada para la Fase 2.</em></figcaption>
-</figure>
+<p align="center">
+  <img src="Imagenes/Diagrama.png" alt="Arquitectura fase 1 y fase 2" width="850">
+  <br>
+  <kbd></kbd> <br>
+  <em>"Arquitectura stateless — Fase 1. El componente Cloud SQL representa la capa de persistencia planificada para la Fase 2."</em>
+</p>
 
 ### Stack tecnologico y Decisiones de Diseño.
 
@@ -177,10 +179,12 @@ Hasta este punto, el comportamiento observado es el esperado. Solo resta esperar
 La instancia ya se encuentra operativa y el autoscaler la considera saludable.
 
 <br>
-<figure>
-  <img src="Imagenes/1 instancia autoscaler buen estado.jpeg" alt="autoscaler 1 ok">
-  <figcaption><em>Vista del autoscaler mostrando que la instancia ya se encuentra operativa.</em></figcaption>
-</figure>
+<p align="center">
+  <img src="Imagenes/1 instancia autoscaler buen estado.jpeg" alt="autoscaler 1 ok" width="850">
+  <br>
+  <kbd></kbd> <br>
+  <em>"Vista del autoscaler mostrando que la instancia ya se encuentra operativa."</em>
+</p>
 <br>
 
 ###### Pasados los 300 segundos del health check
@@ -188,10 +192,12 @@ La instancia ya se encuentra operativa y el autoscaler la considera saludable.
 El health check confirma que la instancia responde correctamente.
 
 <br>
-<figure>
-  <img src="Imagenes/1 vm check ok.jpeg" alt="health check 1 ok">
-  <figcaption><em>El health check confirma que la instancia responde correctamente.</em></figcaption>
-</figure>
+<p align="center">
+  <img src="Imagenes/1 vm check ok.jpeg" alt="health check 1 ok" width="850">
+  <br>
+  <kbd></kbd> <br>
+  <em>"El health check confirma que la instancia responde correctamente."</em>
+</p>
 <br>
 
 #### En este punto, si accedemos a la dirección IP proporcionada por Terraform y actualizamos el navegador, deberíamos recibir una respuesta válida de la aplicación.
@@ -201,10 +207,12 @@ El health check confirma que la instancia responde correctamente.
 La carga artificial comienza a ejecutarse y la instancia alcanza el 100 % de utilización de CPU.
 
 <br>
-<figure>
-  <img src="Imagenes/cpu al 100 desde ssh.jpeg" alt="top cpu 100">
-  <figcaption><em>Conectados por SSH y utilizando el comando <code>top</code>, podemos verificar que la instancia está utilizando el 100 % de CPU.</em></figcaption>
-</figure>
+<p align="center">
+  <img src="Imagenes/cpu al 100 desde ssh.jpeg" alt="top cpu 100" width="850">
+  <br>
+  <kbd></kbd> <br>
+  <em>"Conectados por SSH y utilizando el comando <code>top</code>, podemos verificar que la instancia está utilizando el 100 % de CPU."</em>
+</p>
 <br>
 
 ###### El autoscaler detecta la carga y crea cinco instancias adicionales
@@ -212,10 +220,12 @@ La carga artificial comienza a ejecutarse y la instancia alcanza el 100 % de uti
 Al superarse el umbral configurado, el autoscaler inicia la creación de nuevas réplicas para absorber la carga.
 
 <br>
-<figure>
-  <img src="Imagenes/5 instancias en mal estado desde autoscaler.jpeg" alt="5 instancias en mal estado">
-  <figcaption><em>Se observa la creación de cinco nuevas instancias que aún se encuentran en proceso de inicialización.</em></figcaption>
-</figure>
+<p align="center">
+  <img src="Imagenes/5 instancias en mal estado desde autoscaler.jpeg" alt="5 instancias en mal estado" width="850">
+  <br>
+  <kbd></kbd> <br>
+  <em>"Se observa la creación de cinco nuevas instancias que aún se encuentran en proceso de inicialización."</em>
+</p>
 <br>
 
 ###### Las nuevas instancias todavía no responden al health check
@@ -223,10 +233,12 @@ Al superarse el umbral configurado, el autoscaler inicia la creación de nuevas 
 Este comportamiento es esperado, ya que las instancias aún se encuentran en proceso de inicialización.
 
 <br>
-<figure>
-  <img src="Imagenes/5 instancias en mal estado otra vista.jpeg" alt="5 instancias en mal estado health check">
-  <figcaption><em>Las nuevas instancias aún no completaron su proceso de arranque y, por lo tanto, todavía no responden correctamente.</em></figcaption>
-</figure>
+<p align="center">
+  <img src="Imagenes/5 instancias en mal estado otra vista.jpeg" alt="5 instancias en mal estado health check" width="850">
+  <br>
+  <kbd></kbd> <br>
+  <em>"Las nuevas instancias aún no completaron su proceso de arranque y, por lo tanto, todavía no responden correctamente."</em>
+</p>
 <br>
 
 ###### Vista desde Compute Engine
@@ -234,10 +246,12 @@ Este comportamiento es esperado, ya que las instancias aún se encuentran en pro
 Se observa un total de seis instancias administradas por el Managed Instance Group.
 
 <br>
-<figure>
-  <img src="Imagenes/6 instancias desde compute engine.jpeg" alt="6 instancias creadas">
-  <figcaption><em>Vista general mostrando las seis instancias administradas por el Managed Instance Group.</em></figcaption>
-</figure>
+<p align="center">
+  <img src="Imagenes/6 instancias desde compute engine.jpeg" alt="6 instancias creadas" width="850">
+  <br>
+  <kbd></kbd> <br>
+  <em>"Vista general mostrando las seis instancias administradas por el Managed Instance Group."</em>
+</p>
 <br>
 
 ##### Estado estable del clúster
@@ -253,49 +267,53 @@ El comportamiento observado en las nuevas instancias es idéntico al de la insta
 El autoscaler informa que se alcanzó el número máximo de instancias configurado para el laboratorio.
 
 <br>
-<figure>
-  <img src="Imagenes/6 instancias desde autoscaler.jpeg" alt="6 instancias">
-  <figcaption><em>El autoscaler informa que las seis instancias se encuentran bajo carga y que no es posible crear más réplicas debido al límite máximo configurado.</em></figcaption>
-</figure>
+<p align="center">
+  <img src="Imagenes/6 instancias desde autoscaler.jpeg" alt="6 instancias" width="850">
+  <br>
+  <kbd></kbd> <br>
+  <em>"El autoscaler informa que las seis instancias se encuentran bajo carga y que no es posible crear más réplicas debido al límite máximo configurado."</em>
+</p>
 <br>
 
 ###### Estado de los health checks
 
 Las seis instancias responden correctamente a las verificaciones de estado.
 
+
 <br>
-<figure>
-  <img src="Imagenes/6 instancias ok desde healthcheck otra vista.jpeg" alt="6 instancias responde">
-  <figcaption><em>Todas las instancias responden correctamente a las verificaciones de estado.</em></figcaption>
-</figure>
-<br>
+<p align="center">
+  <img src="Imagenes/6 instancias ok desde healthcheck otra vista.jpeg" alt="6 instancias responde" width="850">
+  <br>
+  <kbd></kbd> <br>
+  <em>"Todas las instancias responden correctamente a las verificaciones de estado."</em>
+</p>
 
 #### Una vez finalizado el período de espera, al actualizar repetidamente la aplicación mediante la IP pública del balanceador, puede observarse cómo las solicitudes son distribuidas entre distintas instancias del grupo.
 
 <br>
 <br>
-
-<figure>
-  <img src="Imagenes/respuesta 051w.jpeg" alt="la instancia 051w responde">
-  <figcaption><em>Respuesta generada por la instancia 051w.</em></figcaption>
-</figure>
-
+<p align="center">
+  <img src="Imagenes/respuesta 051w.jpeg" alt="la instancia 051w responde" width="850">
+  <br>
+  <kbd></kbd> <br>
+  <em>"Respuesta generada por la instancia 051w."</em>
+</p>
 <br>
 <br>
-
-<figure>
-  <img src="Imagenes/respuesta 0frv.jpeg" alt="la instancia 0frv responde">
-  <figcaption><em>Respuesta generada por la instancia 0frv.</em></figcaption>
-</figure>
-
+<p align="center">
+  <img src="Imagenes/respuesta 0frv.jpeg" alt="la instancia 0frv responde" width="850">
+  <br>
+  <kbd></kbd> <br>
+  <em>"Respuesta generada por la instancia 0frv."</em>
+</p>
 <br>
 <br>
-
-<figure>
-  <img src="Imagenes/respuesta m6qk.jpeg" alt="la instancia m6qk responde">
-  <figcaption><em>Respuesta generada por la instancia m6qk.</em></figcaption>
-</figure>
-
+<p align="center">
+  <img src="Imagenes/respuesta m6qk.jpeg" alt="la instancia m6qk responde" width="850">
+  <br>
+  <kbd></kbd> <br>
+  <em>"Respuesta generada por la instancia m6qk."</em>
+</p>
 <br>
 <br>
 
@@ -304,10 +322,12 @@ Las seis instancias responden correctamente a las verificaciones de estado.
 La infraestructura alcanza su estado operativo aproximadamente a los 5 minutos del despliegue. A los 10 minutos se inicia el escalado horizontal automático, alcanzando el máximo configurado de 6 instancias. Una vez finalizado el proceso de estrés de CPU (16 minutos), el autoscaler comienza la fase de escalado descendente (*scale-down*), reduciendo progresivamente la cantidad de nodos hasta regresar a una única instancia para optimizar costos operativos.
 
 <br>
-<figure>
-  <img src="Imagenes/ciclo de vida de las VMs.jpeg" alt="ciclo de vida de las VMs">
-  <figcaption><em>La gráfica muestra el comportamiento de una instancia durante todo su ciclo de vida. Inicialmente se observa un pico de CPU asociado a la instalación de dependencias. Posteriormente, la carga disminuye hasta que se ejecuta el proceso de estrés, provocando un nuevo incremento en el consumo de CPU que activa el autoscaler. Las nuevas instancias replican el mismo patrón de inicialización y convergencia.</em></figcaption>
-</figure>
+<p align="center">
+  <img src="Imagenes/ciclo de vida de las VMs.jpeg" alt="ciclo de vida de las VMs" width="850">
+  <br>
+  <kbd></kbd> <br>
+  <em>"La gráfica muestra el comportamiento de una instancia durante todo su ciclo de vida. Inicialmente se observa un pico de CPU asociado a la instalación de dependencias. Posteriormente, la carga disminuye hasta que se ejecuta el proceso de estrés, provocando un nuevo incremento en el consumo de CPU que activa el autoscaler. Las nuevas instancias replican el mismo patrón de inicialización y convergencia."</em>
+</p>
 <br>
 <br>
 
@@ -316,10 +336,12 @@ La infraestructura alcanza su estado operativo aproximadamente a los 5 minutos d
 Una vez finalizadas las pruebas, se recomienda eliminar todos los recursos creados para evitar costos innecesarios. Terraform permite destruir la infraestructura completa de forma controlada mediante un único comando, garantizando que los recursos sean eliminados respetando sus dependencias.
 
 <br>
-<figure>
-  <img src="Imagenes/Terraform destroy.jpeg" alt="terraform destroy">
-  <figcaption><em>Ejecución del comando <code>terraform destroy</code> para eliminar todos los recursos aprovisionados durante el laboratorio.</em></figcaption>
-</figure>
+<p align="center">
+  <img src="Imagenes/Terraform destroy.jpeg" alt="terraform destroy" width="850">
+  <br>
+  <kbd></kbd> <br>
+  <em>"Ejecución del comando <code>terraform destroy</code> para eliminar todos los recursos aprovisionados durante el laboratorio."</em>
+</p>
 <br>
 <br>
 
