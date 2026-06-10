@@ -6,7 +6,7 @@
 ![Debian](https://img.shields.io/badge/Debian-A81D33?style=for-the-badge&logo=debian&logoColor=white)
 ![IaC](https://img.shields.io/badge/IaC-2e7d32?style=for-the-badge&logo=files&logoColor=white)
 
-### Resumen del proyecto
+## Resumen del proyecto
 Arquitectura elástica y de alta disponibilidad desplegada en Google Cloud Platform mediante Terraform. El objetivo principal fue diseñar una plataforma resiliente capaz de escalar automáticamente (*scale-out*) ante picos de demanda y regresar a un estado de bajo costo (*scale-in*) cuando la carga disminuye.
 
 **Características Principales:**
@@ -49,9 +49,7 @@ Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratori
   <em>"Arquitectura stateless — Fase 1. El componente Cloud SQL representa la capa de persistencia planificada para la Fase 2."</em>
 </p>
 
-### Stack tecnologico y Decisiones de Diseño.
-
-#### Stack Tecnológico. 
+## Stack tecnologico y Decisiones de Diseño.
 - Infraestructura como Código: Terraform
 - Proveedor Cloud: Google Cloud Platform (GCP)
 - Cómputo Elástico: Compute Engine (e2-micro), Regional Managed Instance Group (MIG)
@@ -60,13 +58,13 @@ Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratori
 - Seguridad Zero-Trust: Identity-Aware Proxy (IAP)
 - Capa de Aplicación: Debian 11, Bash (Startup Scripts), Python 3, FastAPI, Uvicorn, Stress
 
-### requisitos
+## requisitos
 - **cuenta de Google Cloud Computing GCP** - un proyecto de GCP creado y activo, cuenta de facturacion (Billing) vinculada al proyecto.
 - **APIs Habilitadas** - la api de compute engine habilitada en el proyecto.
 - **Herramientas de línea de comandos (CLI) y terraform** - terraform instalado en tu entorno local, Gcloud instalado y autenticado.
 - **Permisos de IAM** - tener los permisos en GCP para crear redes y máquinas virtuales.
 
-### despliegue
+## despliegue
 1. Clonar el repositorio: git clone [https://github.com/tu-usuario/tu-repo.git](https://github.com/Anon277ARG/Arquitectura-Elastica-y-Alta-Disponibilidad-en-GCP-con-Terraform.).
 2. Autenticar en gcp: gcloud auth application-default login.
 3. Configurar el proyecto: gcloud config set project cloud-lab-493.
@@ -80,7 +78,7 @@ Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratori
 ### Comportamiento Esperado del Sistema
 Esta sección describe el ciclo de vida completo de la arquitectura desde el momento del despliegue hasta el scale-down final. Cada comportamiento descripto es intencional y responde a decisiones de diseño documentadas en la sección de componentes.
 
-#### Resumen de tiempos del ciclo de vida
+### Resumen de tiempos del ciclo de vida
 - **0 - 5 min** — Terraform apply completo, infraestructura creada.
 - **5 min** — IP del balanceador sin respuesta, comportamiento esperado.
 - **~5 min** — Primera instancia en buen estado, IP comienza a responder.
@@ -91,7 +89,7 @@ Esta sección describe el ciclo de vida completo de la arquitectura desde el mom
 - **~24 min** — Scale-down inicia.
 - **~27 – 30 min** — Sistema regresa a 1 instancia activa.
 
-#### Fase 1 — Despliegue (0 – 3 min)
+### Fase 1 — Despliegue (0 – 3 min)
 <br>
 terraform apply crea los 16 recursos en GCP en orden según el grafo de dependencias.
 El MIG levanta una única instancia (min_replicas = 1) en una de las zonas configuradas.
