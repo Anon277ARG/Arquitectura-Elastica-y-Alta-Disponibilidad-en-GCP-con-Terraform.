@@ -6,7 +6,7 @@
 ![Debian](https://img.shields.io/badge/Debian-A81D33?style=for-the-badge&logo=debian&logoColor=white)
 ![IaC](https://img.shields.io/badge/IaC-2e7d32?style=for-the-badge&logo=files&logoColor=white)
 
-## Resumen del proyecto
+## Resumen del proyecto.
 Arquitectura elástica y de alta disponibilidad desplegada en Google Cloud Platform mediante Terraform. El objetivo principal fue diseñar una plataforma resiliente capaz de escalar automáticamente (*scale-out*) ante picos de demanda y regresar a un estado de bajo costo (*scale-in*) cuando la carga disminuye.
 
 **Características Principales:**
@@ -58,13 +58,13 @@ Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratori
 - Seguridad Zero-Trust: Identity-Aware Proxy (IAP)
 - Capa de Aplicación: Debian 11, Bash (Startup Scripts), Python 3, FastAPI, Uvicorn, Stress
 
-## requisitos
+## requisitos.
 - **cuenta de Google Cloud Computing GCP** - un proyecto de GCP creado y activo, cuenta de facturacion (Billing) vinculada al proyecto.
 - **APIs Habilitadas** - la api de compute engine habilitada en el proyecto.
 - **Herramientas de línea de comandos (CLI) y terraform** - terraform instalado en tu entorno local, Gcloud instalado y autenticado.
 - **Permisos de IAM** - tener los permisos en GCP para crear redes y máquinas virtuales.
 
-## despliegue
+## despliegue.
 1. Clonar el repositorio: git clone [https://github.com/tu-usuario/tu-repo.git](https://github.com/Anon277ARG/Arquitectura-Elastica-y-Alta-Disponibilidad-en-GCP-con-Terraform.).
 2. Autenticar en gcp: gcloud auth application-default login.
 3. Configurar el proyecto: gcloud config set project cloud-lab-493.
@@ -75,10 +75,10 @@ Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratori
 8. Una vez obtenida la IP, abrí `http://<ip>` en el navegador. Durante los primeros 5 minutos la arquitectura no va a responder, ese comportamiento está documentado en la sección de operaciones.
 9. Destruir el entorno cuando termine: terraform destroy.
 
-### Comportamiento Esperado del Sistema
+### Comportamiento Esperado del Sistema.
 Esta sección describe el ciclo de vida completo de la arquitectura desde el momento del despliegue hasta el scale-down final. Cada comportamiento descripto es intencional y responde a decisiones de diseño documentadas en la sección de componentes.
 
-### Resumen de tiempos del ciclo de vida
+### Resumen de tiempos del ciclo de vida.
 - **0 - 5 min** — Terraform apply completo, infraestructura creada.
 - **5 min** — IP del balanceador sin respuesta, comportamiento esperado.
 - **~5 min** — Primera instancia en buen estado, IP comienza a responder.
@@ -89,7 +89,7 @@ Esta sección describe el ciclo de vida completo de la arquitectura desde el mom
 - **~24 min** — Scale-down inicia.
 - **~27 – 30 min** — Sistema regresa a 1 instancia activa.
 
-### Fase 1 — Despliegue (0 – 3 min)
+### Fase 1 — Despliegue (0 – 3 min).
 <br>
 terraform apply crea los 16 recursos en GCP en orden según el grafo de dependencias.
 El MIG levanta una única instancia (min_replicas = 1) en una de las zonas configuradas.
@@ -98,7 +98,7 @@ Durante esta fase la CPU de la e2-micro sube naturalmente al 100% por la instala
 La IP del balanceador no responde. Este es el comportamiento esperado.
 
 
-#### Fase 2 — Inicialización y tiempos de gracia (3 – 5 min)
+#### Fase 2 — Inicialización y tiempos de gracia (3 – 5 min).
 <br>
 El startup script finaliza la instalación y levanta Uvicorn en el puerto 8080 con &.
 El proceso estresar.sh se lanza con nohup y entra en sleep 300, esperando en segundo plano.
@@ -114,7 +114,7 @@ La IP del balanceador comienza a responder. Navegando a http://<ip> se obtiene l
 
 ```
 
-#### Fase 3 — Estrés y autoescalado horizontal (5 – 11 min)
+#### Fase 3 — Estrés y autoescalado horizontal (5 – 11 min).
 <br>
 El sleep 300 del script de estrés termina y stress --cpu $(nproc) ejecuta, llevando la CPU al 100%.
 El autoscaler detecta que el uso de CPU supera el umbral configurado (80%) y toma la decisión de escalar.
@@ -125,7 +125,7 @@ Al cabo de aproximadamente 10 – 11 minutos desde el deploy inicial, las 6 inst
 Refrescando repetidamente http://<ip> en el navegador, el campo máquina cambia entre los hostnames de las 6 instancias, demostrando que el balanceador distribuye el tráfico entre todos los nodos activos.
 
 
-#### Fase 4 — Estabilización y scale-down (21 – 30 min)
+#### Fase 4 — Estabilización y scale-down (21 – 30 min).
 <br>
 El proceso stress finaliza tras el timeout configurado de 960 segundos (~16 minutos desde que arrancó).
 El uso de CPU cae en todas las instancias por debajo del umbral del 80%.
@@ -135,7 +135,7 @@ El sistema regresa a 1 instancia activa (min_replicas = 1).
 La IP del balanceador sigue respondiendo durante todo el proceso de scale-down.
 
 
-#### Fase 5 — Destrucción del entorno
+#### Fase 5 — Destrucción del entorno.
 <br>
 Ejecutar terraform destroy en la terminal.
 Terraform destruye los recursos en orden inverso al grafo de dependencias.
@@ -145,12 +145,12 @@ Al finalizar, la terminal confirma la destrucción completa:
 
 Destroy complete! Resources: 16 destroyed.
 
-### operaciones 
-#### Siguiendo las instrucciones descritas más arriba vamos a desplegar esta arquitectura con visuales que muestran los resultados esperados.
+## operaciones.
+### Siguiendo las instrucciones descritas más arriba vamos a desplegar esta arquitectura con visuales que muestran los resultados esperados.
 Después de clonar este repositorio, autenticarnos en los servicios de Google, iniciar Terraform y solucionar incompatibilidades entre sistemas operativos, los pasos que se establecen son los siguientes
 - ```.\terraform.exe plan``` y ``` .\terraform.exe apply``` al usar estos comandos terraform le pregunta al proveedor si dichos recursos ya existen, trae el estado de la arquitectura actual y actualiza nuestro archivo ```terraform.tfstate``` documento que registra el estado actual de nuestra arquitectura, también crea un grafo de dependencias, terraform no puede crear una subred si primero no tiene una red.
 
-#### Despliegue de la infraestructura
+### Despliegue de la infraestructura.
 
 Se ejecutó `terraform plan` para validar la configuración y previsualizar los cambios que serían aplicados en Google Cloud. Terraform determinó la creación de 16 recursos necesarios para la arquitectura.
 
@@ -158,13 +158,13 @@ Posteriormente, mediante `terraform apply`, se autorizó y ejecutó el despliegu
 
 Al finalizar el proceso, los 16 recursos fueron aprovisionados correctamente y se obtuvo la dirección IP pública del balanceador de cargas para acceder a la aplicación.
 
-#### Fase de Inicializacion y tiempos de gracia.
+### Fase de Inicializacion y tiempos de gracia.
 <br>
 
 En este primer paso, si tomamos la dirección IP del balanceador y la abrimos en el navegador, veremos que la arquitectura temporalmente no responde. Esto es un comportamiento esperado, ya que la infraestructura se encuentra intencionalmente "congelada" por diseño para proteger el ciclo de vida de los recursos.
 <br>
 
-##### Convergencia inicial de la infraestructura
+#### Convergencia inicial de la infraestructura.
 
 Hasta este punto, el comportamiento observado es el esperado. Solo resta esperar a que finalicen los tiempos de gracia configurados para cada componente:
 
@@ -172,7 +172,7 @@ Hasta este punto, el comportamiento observado es el esperado. Solo resta esperar
 2. 300 segundos de gracia para el health check.
 3. 300 segundos de espera (`sleep`) antes de iniciar la carga de CPU.
 
-###### Pasados los 180 segundos de cooldown del autoscaler
+##### Pasados los 180 segundos de cooldown del autoscaler.
 
 La instancia ya se encuentra operativa y el autoscaler la considera saludable.
 
@@ -185,7 +185,7 @@ La instancia ya se encuentra operativa y el autoscaler la considera saludable.
 </p>
 <br>
 
-###### Pasados los 300 segundos del health check
+##### Pasados los 300 segundos del health check.
 
 El health check confirma que la instancia responde correctamente.
 
@@ -200,7 +200,7 @@ El health check confirma que la instancia responde correctamente.
 
 #### En este punto, si accedemos a la dirección IP proporcionada por Terraform y actualizamos el navegador, deberíamos recibir una respuesta válida de la aplicación.
 
-###### Pasados los 300 segundos de espera (`sleep`)
+##### Pasados los 300 segundos de espera (`sleep`).
 
 La carga artificial comienza a ejecutarse y la instancia alcanza el 100 % de utilización de CPU.
 
@@ -213,7 +213,7 @@ La carga artificial comienza a ejecutarse y la instancia alcanza el 100 % de uti
 </p>
 <br>
 
-###### El autoscaler detecta la carga y crea cinco instancias adicionales
+##### El autoscaler detecta la carga y crea cinco instancias adicionales.
 
 Al superarse el umbral configurado, el autoscaler inicia la creación de nuevas réplicas para absorber la carga.
 
@@ -226,7 +226,7 @@ Al superarse el umbral configurado, el autoscaler inicia la creación de nuevas 
 </p>
 <br>
 
-###### Las nuevas instancias todavía no responden al health check
+##### Las nuevas instancias todavía no responden al health check.
 
 Este comportamiento es esperado, ya que las instancias aún se encuentran en proceso de inicialización.
 
@@ -239,7 +239,7 @@ Este comportamiento es esperado, ya que las instancias aún se encuentran en pro
 </p>
 <br>
 
-###### Vista desde Compute Engine
+##### Vista desde Compute Engine.
 
 Se observa un total de seis instancias administradas por el Managed Instance Group.
 
@@ -252,7 +252,7 @@ Se observa un total de seis instancias administradas por el Managed Instance Gro
 </p>
 <br>
 
-##### Estado estable del clúster
+#### Estado estable del clúster.
 
 El comportamiento observado en las nuevas instancias es idéntico al de la instancia original. Cada una debe completar su proceso de inicialización antes de ser considerada saludable y comenzar a recibir tráfico.
 
@@ -260,7 +260,7 @@ El comportamiento observado en las nuevas instancias es idéntico al de la insta
 2. 300 segundos de gracia para el health check.
 3. 300 segundos de espera (`sleep`) antes de iniciar la carga de CPU.
 
-###### Vista desde el autoscaler
+##### Vista desde el autoscaler.
 
 El autoscaler informa que se alcanzó el número máximo de instancias configurado para el laboratorio.
 
@@ -273,7 +273,7 @@ El autoscaler informa que se alcanzó el número máximo de instancias configura
 </p>
 <br>
 
-###### Estado de los health checks
+##### Estado de los health checks.
 
 Las seis instancias responden correctamente a las verificaciones de estado.
 
@@ -286,7 +286,7 @@ Las seis instancias responden correctamente a las verificaciones de estado.
   <em>"Todas las instancias responden correctamente a las verificaciones de estado."</em>
 </p>
 
-#### Una vez finalizado el período de espera, al actualizar repetidamente la aplicación mediante la IP pública del balanceador, puede observarse cómo las solicitudes son distribuidas entre distintas instancias del grupo.
+### Una vez finalizado el período de espera, al actualizar repetidamente la aplicación mediante la IP pública del balanceador, puede observarse cómo las solicitudes son distribuidas entre distintas instancias del grupo.
 
 <br>
 <br>
@@ -315,7 +315,7 @@ Las seis instancias responden correctamente a las verificaciones de estado.
 <br>
 <br>
 
-### Ciclo de vida de las VMs
+### Ciclo de vida de las VMs.
 
 La infraestructura alcanza su estado operativo aproximadamente a los 5 minutos del despliegue. A los 10 minutos se inicia el escalado horizontal automático, alcanzando el máximo configurado de 6 instancias. Una vez finalizado el proceso de estrés de CPU (16 minutos), el autoscaler comienza la fase de escalado descendente (*scale-down*), reduciendo progresivamente la cantidad de nodos hasta regresar a una única instancia para optimizar costos operativos.
 
@@ -329,7 +329,7 @@ La infraestructura alcanza su estado operativo aproximadamente a los 5 minutos d
 <br>
 <br>
 
-### Destrucción de la infraestructura
+### Destrucción de la infraestructura.
 
 Una vez finalizadas las pruebas, se recomienda eliminar todos los recursos creados para evitar costos innecesarios. Terraform permite destruir la infraestructura completa de forma controlada mediante un único comando, garantizando que los recursos sean eliminados respetando sus dependencias.
 
@@ -343,7 +343,7 @@ Una vez finalizadas las pruebas, se recomienda eliminar todos los recursos cread
 <br>
 <br>
 
-### Notas de Diseño.
+## Notas de Diseño.
 - Arquitectura Stateless (Fase 1): Esta primera versión fue diseñada de forma intencional sin capa de persistencia (Base de Datos) para enfocarnos única y puramente en validar el comportamiento del cómputo elástico y la distribución de red. La capa de datos se abordará en la Fase 2.
 - Recursos Planos vs. Módulos (Claridad Didáctica): Se optó por utilizar resources individuales de Terraform en lugar de módulos prefabricados. Esto garantiza un control granular sobre cada parámetro y aporta claridad didáctica, ya que cada bloque de código refleja de forma explícita un componente de la topología real.
 - Seguridad Zero-Trust y Acceso vía IAP: Las instancias carecen de IP pública y el puerto 22 (SSH) no está abierto a todo internet. La regla de firewall allow-ssh-itaca solo permite tráfico desde la red 35.235.240.0/20 (rango oficial de Identity-Aware Proxy de Google), mediando el acceso seguro sin necesidad de Bastion Hosts.
@@ -353,14 +353,15 @@ Una vez finalizadas las pruebas, se recomienda eliminar todos los recursos cread
 - Infraestructura Inmutable (Startup Scripts): Se utilizó el patrón de Startup Script inyectado en la Metadata. Las instancias nacen limpias (imagen base de Debian 11) y se autoconfiguran al bootear instalando FastAPI y Uvicorn, facilitando la rotación de nodos ante futuras actualizaciones de la API.
 - Estabilidad de Métricas y Prevención de Flapping: Al usar máquinas pequeñas (e2-micro), el simple hecho de instalar dependencias eleva la CPU al 100%. Para evitar que el autoscaler lea esto como un "falso positivo" y cree réplicas innecesarias (flapping), se separó la fase de aprovisionamiento de la de carga real sincronizando tiempos lógicos: un initial_delay_sec de 300s en el MIG, un cooldown_period de 180s en el Autoscaler, y un sleep de 300s en el script de estrés.
 
-### Componentes
+## Componentes.
 
+**aca se puede leer una descripcion detallada de los componentes uno a uno
 <details>
-<summary>Descripción detallada uno a uno de los componentes de la arquitectura</summary>
+<summary>A continuación, una descripción detallada de cada componente de la arquitectura.</summary>
 
 <br>
 
-#### Redes
+### Redes.
 
 - **VPC personalizada** denominada `itaca-network`, desplegada en la región de Santiago. La configuración más relevante es la desactivación de la creación automática de subredes, permitiendo un control total sobre el direccionamiento IP.
 
@@ -424,14 +425,14 @@ resource "google_compute_router_nat" "itaca_nat" {
 }
 ```
 
-### Firewall
+### Firewall.
 - reglas de firewall con el nombre "itaca-firewall, itaca-health-check, allow-ssh-itaca" 
 - todas las reglas con el mismo tag para evitar confuciones "itaca-firewalls"
-#### abiertos los puertos y las ips
+#### abiertos los puertos y las ips.
 - "22 y 35.235.240.0/20" para la conexions ssh
 - "8080 y 10.129.0.0/23" para la conexion del proxy con el load balancer
 - "8080 y 35.191.0.0/16, 130.211.0.0/22" para los health check
-#### codigo de itaca-firewall
+#### codigo de itaca-firewall.
 ```
   resource "google_compute_firewall" "itaca_firewall" {
   name    = "itaca-firewall"
@@ -447,7 +448,7 @@ resource "google_compute_router_nat" "itaca_nat" {
   target_tags = ["itaca-firewalls"]
   }
 ```
-#### codigo de itaca-health-check
+### codigo de itaca-health-check.
 ```
 resource "google_compute_firewall" "itaca_health_check" {
   name    = "itaca-health-check"
@@ -463,7 +464,7 @@ resource "google_compute_firewall" "itaca_health_check" {
   target_tags = ["itaca-firewalls"]
 }
 ```
-#### codigo de allow-ssh-itaca
+### codigo de allow-ssh-itaca.
 ```
 resource "google_compute_firewall" "allow_ssh_itaca" {
   name        = "allow-ssh-itaca"
@@ -479,14 +480,14 @@ resource "google_compute_firewall" "allow_ssh_itaca" {
   target_tags = ["itaca-firewalls"]
 }
 ```
-### BackEnds
-#### MAnage Intance Group con la siguiente configuracion
+### BackEnds.
+#### Manage Intance Group con la siguiente configuracion.
 - con el nombre "itaca-mig
 - conectado al puerto 8080
 - configurado en la region santiago
 - initial delay de 300 segundos de delay como health check policy, para que las VMs se pongan en linea.
 - politicas de distribucion en las zonas a y b de la respectiva region.
-##### codigo del Manage Instance Group
+#### codigo del Manage Instance Group.
 ```
 resource "google_compute_region_instance_group_manager" "mig" { 
    name = "itaca-mig"
@@ -509,7 +510,7 @@ resource "google_compute_region_instance_group_manager" "mig" {
    }
   }
 ```
-#### mig template con la siguiente configuracion
+#### mig template con la siguiente configuracion.
 - nombre: virtual-machine-template
 - tag: "itaca-firewalls" para llamar a todos los firewalls
 - instancia: e2-Micro, no es necesario mas.
@@ -520,7 +521,7 @@ resource "google_compute_region_instance_group_manager" "mig" {
 ```
 resource "google_compute_instance_template" "mig_template" {
   name        = "virtual-machine-template"
-  description = "tose are thet templates used by the manage instance group."
+  description = "those are the templates used by the managed instance group."
 
   tags = ["itaca-firewalls"]
 
@@ -586,7 +587,7 @@ BASH_EOF
   }
 }
 ```
-#### autoscaler con la siguiente configuracion
+#### autoscaler con la siguiente configuracion.
 - nombre: "autoscaler-itaca"
 - politica de autoscaling como 1 en replicas minimas y 6 en replicas maximas
 - un cooldown period de 180 segundos para asegurarnos la no creacion de replicas indeseadas.
@@ -606,7 +607,7 @@ resource "google_compute_region_autoscaler" "itaca_autoscaler" {
  }
 }
 ```
-#### servicio Back end con la siguiente configuracion
+#### servicio Back end con la siguiente configuracion.
 - nombre: "itaca-backend-service"
 - protocolo: HTTP
 - esquema de balanceo de carga como "External Managed" usando el nuevo esquema y dandole sentido a la subnet proxy
@@ -626,8 +627,8 @@ resource "google_compute_region_backend_service" "itaca_backend" {
   }
 }
 ```
-### Load Balancer
-#### Forwarding rule como puerta de acceso a la internet publica
+### Load Balancer.
+#### Forwarding rule como puerta de acceso a la internet publica.
 ```
 resource "google_compute_forwarding_rule" "itaca-forwarding-rule" { 
   name = "itaca-forwarding-rule"
@@ -639,7 +640,7 @@ resource "google_compute_forwarding_rule" "itaca-forwarding-rule" {
   depends_on = [google_compute_subnetwork.itaca_proxy]
 }
 ```
-#### Target proxy como intermediario y procesador del tráfico
+#### Target proxy como intermediario y procesador del tráfico.
 ```
 resource "google_compute_region_target_http_proxy" "itaca_target_proxy" { 
   name = "itaca-target-proxy"
@@ -647,7 +648,7 @@ resource "google_compute_region_target_http_proxy" "itaca_target_proxy" {
   url_map = google_compute_region_url_map.itaca_url_map.id
 }
 ```
-#### URL Map como como enrutador principal
+#### URL Map como como enrutador principal.
 ```
 resource "google_compute_region_url_map" "itaca_url_map" {
   name = "itaca-url-map"
@@ -655,7 +656,7 @@ resource "google_compute_region_url_map" "itaca_url_map" {
   default_service = google_compute_region_backend_service.itaca_backend.id
 } 
 ```
-#### Output con la ip publica del balanceador
+#### Output con la ip publica del balanceador.
 ```
 output "ip_publica_balanceador" {
   value = google_compute_forwarding_rule.itaca-forwarding-rule.ip_address
@@ -665,7 +666,7 @@ output "ip_publica_balanceador" {
 </details>
 <br>
 
-### FinOps y Análisis de Costos (Estimación Mensual)
+### FinOps y Análisis de Costos (Estimación Mensual).
 La adopción de la Infraestructura como Código (IaC) permite un despliegue ágil, pero conlleva la responsabilidad de gestionar el presupuesto (FinOps). A continuación, se presenta un desglose de los costos operativos si esta arquitectura se mantuviera encendida 24/7 durante un mes (730 horas) en la región southamerica-west1 (Santiago):
 
 1. Costos Base de Red y Balanceo (Cargos Fijos)
@@ -673,7 +674,7 @@ Independientemente de la cantidad de máquinas virtuales que estén funcionando,
 Cloud NAT & Cloud Router: ~ $18.00 USD / mes (Cargo fijo por mantener la pasarela de traducción activa).
 Application Load Balancer (Regional): ~ $18.00 USD / mes (Cargo base por las reglas de reenvío y proxy, excluyendo el procesamiento de datos).
 
-**Subtotal Redes: ~ $50.00 USD mensuales.**
+**Subtotal Redes: ~ $36.00 USD mensuales.**
 
 2. Costos de Cómputo (Cargos Dinámicos)
 El clúster utiliza instancias e2-micro con discos de arranque estándar de 10 GB. El costo por nodo es de aproximadamente $13.00 USD mensuales ($8.00 por cómputo + $5.00 por almacenamiento).
@@ -687,63 +688,67 @@ Escenario de Estrés (Pico de Demanda 24/7): El Autoscaler aprovisiona el máxim
 Costo de cómputo: ~ $78.00 USD.
 **Costo Total (Redes + Cómputo): ~ $114.00 USD / mes.**
 
-### todos estos numeros son estimativos 
+**nota:** todos estos numeros son estimativos. 
 
 Estrategia de Mitigación de Costos
 Debido a que este entorno está diseñado con fines de laboratorio y pruebas de resiliencia, el ciclo de vida de la infraestructura es efímero. Al utilizar la inmutabilidad de Terraform, el comando terraform destroy garantiza que no queden recursos huérfanos (como discos desconectados o IPs reservadas).
 
 El costo real de ejecutar el laboratorio completo documentado en este repositorio (despliegue, 15 minutos de estrés al 100% de capacidad y destrucción total) es inferior a $0.10 USD, demostrando un uso altamente eficiente de los recursos de la nube.
 
-### Registro de Incidentes y Resolución de Problemas
-#### Aprendizajes Principales del Proyecto
+## Registro de Incidentes y Resolución de Problemas.
+### Aprendizajes Principales del Proyecto.
 - **Alta Disponibilidad:** Configuración y gestión de Managed Instance Groups (MIG) regionales.
 - **Métricas y Autoscaling:** Sincronización de tiempos lógicos (Auto-healing vs. Autoscaling) para evitar *flapping* durante el aprovisionamiento de instancias.
 - **Networking Avanzado en GCP:** Requisitos obligatorios de topología y subredes dedicadas (Proxy Envoy) para Application Load Balancers modernos.
 - **Terraform Avanzado:** Control del ciclo de vida de los recursos y manejo de dependencias implícitas (`depends_on`).
 - **Troubleshooting Real:** Depuración de procesos huérfanos en Linux (`nohup`) y resolución de incompatibilidades de ejecución de scripts entre Windows y Linux (CRLF vs LF).
-#### Incidente 1 — Inestabilidad en el ciclo de vida del Managed Instance Group (Flapping)
+<br>
+<br>
+<br>
 
-##### Síntoma
+#### Incidente 1 — Inestabilidad en el ciclo de vida del Managed Instance Group (Flapping).
+
+##### Síntoma.
 Las instancias entraban en un bucle continuo de creación y destrucción, o el autoscaler aprovisionaba réplicas prematuramente antes de registrar tráfico real de usuarios.
 
-##### Causa raíz
+##### Causa raíz.
 La ejecución del startup script (descarga de paquetes vía apt-get e instalación de dependencias de Python) saturaba la CPU de las instancias e2-micro al 100%. El autoscaler interpretaba este pico temporal como tráfico legítimo, mientras que los health checks fallaban al no recibir respuesta en el puerto 8080 debido a que la aplicación aún no estaba inicializada.
 
-##### Resolución implementada
+##### Resolución implementada.
 Se diseñó un esquema de desacoplamiento temporal mediante la sincronización de tres variables:
 initial_delay_sec = 300 en el MIG — previene que el sistema de auto-healing marque la instancia como corrupta durante los primeros 5 minutos de aprovisionamiento.
 cooldown_period = 180 en el autoscaler — instruye al escalador a ignorar los picos de CPU durante los primeros 3 minutos de vida de la instancia.
 sleep 300 en el script de inicialización — pospone intencionalmente el proceso de estrés, permitiendo aislar y estabilizar las métricas de arranque frente a las métricas de carga real.
 
-##### Lección aprendida
+##### Lección aprendida.
 En instancias pequeñas, la instalación de dependencias genera picos de CPU que el autoscaler no puede distinguir de carga real. Separar la fase de inicialización de la fase de carga es una decisión de diseño. En producción este problema se resuelve usando imágenes de disco pre-construidas (Packer) o contenedores Docker, donde las dependencias ya están instaladas y el arranque toma segundos.
 
-#### Incidente 2 — Fallo silencioso en el aprovisionamiento de instancias (CRLF vs LF)
+#### Incidente 2 — Fallo silencioso en el aprovisionamiento de instancias (CRLF vs LF).
 
-##### Síntoma
+##### Síntoma.
 Las instancias se creaban correctamente en Compute Engine pero no exponían la API en el puerto 8080. La verificación de logs en el puerto serie reflejaba que el startup script no se estaba ejecutando.
 
-##### Causa raíz
+##### Causa raíz.
 Incompatibilidad de codificación de caracteres. Al desarrollar el código Terraform en un entorno Windows, se insertaron saltos de línea tipo CRLF (\r\n). El sistema operativo de las instancias (Debian Linux) espera saltos de línea tipo LF (\n), lo que causaba un error de lectura silencioso en el intérprete de bash.
 
-##### Resolución implementada
+##### Resolución implementada.
 Estandarización del formato del archivo mediante un comando de sanitización pre-despliegue en PowerShell:
 powershell(Get-Content main.tf -Raw) -replace "`r`n", "`n" | Set-Content main.tf -NoNewline
 
-##### Lección aprendida
+##### Lección aprendida.
 En entornos Windows, cualquier archivo que contenga scripts bash debe ser normalizado a LF antes de ser procesado por Terraform. La falla es silenciosa: no hay error visible en terraform apply, el problema solo aparece al inspeccionar los logs del puerto serie de la VM.
 
-#### Incidente 3 — Pérdida de enrutamiento en el Application Load Balancer
+#### Incidente 3 — Pérdida de enrutamiento en el Application Load Balancer.
 
-##### Síntoma
+##### Síntoma.
 El balanceador retornaba errores de conectividad y los health checks marcaban los backends permanentemente como unhealthy. Adicionalmente el startup script fallaba al intentar actualizar los repositorios de Linux.
 
-##### Causa raíz
+##### Causa raíz.
 Dos problemas simultáneos:
 El balanceador regional EXTERNAL_MANAGED opera bajo un esquema de proxies Envoy que requiere por diseño una topología de subred específica que no estaba declarada inicialmente.
 Las reglas estrictas de la VPC custom sin IPs públicas bloqueaban tanto el tráfico saliente necesario para la descarga de paquetes como el tráfico entrante de los monitores de Google.
 
-##### Resolución implementada
+##### Resolución implementada.
 Topología de red — aprovisionamiento de la subred itaca_proxy con el propósito obligatorio
 ```
 REGIONAL_MANAGED_PROXY:
@@ -759,22 +764,22 @@ resource "google_compute_subnetwork" "itaca_proxy" {
 Salida a internet — despliegue de Cloud NAT y Cloud Router para habilitar tráfico saliente manteniendo el aislamiento de la VPC.
 Control de ingress — regla de firewall que autoriza tráfico TCP al puerto 8080 exclusivamente a los rangos IP de los servidores de health check de Google:
 source_ranges = ["35.191.0.0/16", "130.211.0.0/22"]
-##### Lección aprendida
+##### Lección aprendida.
 El esquema EXTERNAL_MANAGED es el nuevo estándar para ALB regionales en GCP pero tiene requisitos de red más estrictos que el esquema clásico. La proxy subnet no es opcional, es un prerequisito arquitectónico del balanceador.
 
-#### Incidente 4 — Procesos huérfanos: la API y el script de estrés morían al terminar el startup script
+#### Incidente 4 — Procesos huérfanos: la API y el script de estrés morían al terminar el startup script.
 
-##### Síntoma
+##### Síntoma.
 La VM arrancaba correctamente e instalaba las dependencias, pero al cabo de unos segundos el health check dejaba de responder. Al conectarse por SSH y ejecutar ps aux, los procesos de uvicorn y stress no estaban corriendo.
 
-##### Causa raíz
+##### Causa raíz.
 El operador & envía el proceso al background pero lo mantiene como hijo del shell actual. Cuando el shell del startup script terminaba, el kernel enviaba SIGHUP a todos los procesos hijos, matándolos.
 Código problemático
 ```
 bashpython3 -m uvicorn main:app --host 0.0.0.0 --port 8080 --app-dir /home &
 sleep 300 && stress --cpu $(nproc) --timeout 960 &
 ```
-##### Resolución implementada
+##### Resolución implementada.
 Uso de nohup para desconectar los procesos del shell padre, combinado con redirección de logs:
 ```
 bashpython3 -m uvicorn main:app --host 0.0.0.0 --port 8080 --app-dir /home &
@@ -789,22 +794,22 @@ stress --cpu $(nproc) --timeout 960
 BASH_EOF
 chmod +x /home/estresar.sh
 ```
-##### Lección aprendida
+##### Lección aprendida.
 nohup desconecta el proceso del shell padre, permitiendo que sobreviva cuando el shell termina. Las comillas simples en 'BASH_EOF' son críticas: sin ellas bash evaluaría $(nproc) al momento de escribir el archivo en lugar de al momento de ejecutarlo.
 
-#### Incidente 5 — Error en terraform destroy: recurso en uso
+#### Incidente 5 — Error en terraform destroy: recurso en uso.
 
-##### Síntoma
+##### Síntoma.
 Al ejecutar terraform destroy, GCP devolvía el siguiente error:
 ```
 Error: googleapi: Error 400: The subnetwork resource 'itaca-subnetwork-proxy' is already being used by 'itaca-forwarding-rule', resourceInUseByAnotherResource
 ```
 La infraestructura quedaba en un estado parcialmente destruido con el state de Terraform desincronizado de GCP.
 
-##### Causa raíz
+##### Causa raíz.
 Terraform intentaba destruir la proxy subnet antes de destruir el forwarding rule. Como el forwarding rule no referenciaba directamente a la proxy subnet en el código, Terraform no infería la dependencia y ejecutaba ambas destrucciones en paralelo.
 
-##### Resolución implementada
+##### Resolución implementada.
 Declaración explícita de dependencia mediante depends_on en el forwarding rule:
 
 ```
@@ -818,17 +823,17 @@ resource "google_compute_forwarding_rule" "itaca-forwarding-rule" {
   depends_on            = [google_compute_subnetwork.itaca_proxy]
 }
 ```
-##### Lección aprendida
+##### Lección aprendida.
 Terraform infiere dependencias automáticamente solo cuando hay referencias directas entre recursos. Cuando la dependencia es implícita (dos recursos que GCP relaciona internamente pero que no están referenciados entre sí en el código), hay que declararla explícitamente con depends_on. Esto aplica especialmente al orden de destrucción.
 
 --- 
-### colofon el por que de itaca Itaca
+### colofon el por que de itaca Itaca.
 Durante el documento se lee el nombre "Ítaca". Ítaca hace alusión al hogar del protagonista de la Ilíada de Homero, Odiseo (Ὀδυσσεύς en griego), rey de Ítaca, donde su amada esposa Penélope (Πηνελόπεια) junto a su hijo Telémaco (Τηλέμαχος) lo esperaban ansiosamente día a día. Los romanos, como es sabido en la historia, tomaron mucho de la cultura griega y lo adaptaron: Odiseo se volvió Ulises, Penélope se volvió Penelopea y Telémaco se volvió Telemachus. Todos conocemos la historia de la Ilíada, pero eso no es lo importante.
 
 Lo importante de esto es el origen etimológico de la palabra Penélope. Aunque se discute, se cree que "Pene" viene de "hilo, tejido, trama". Por otro lado, Florencia viene del latín, de alguna parte del centro de Italia, y significa "florida", "en flor" o "aquella que da frutos y florece". Esto es importante porque, al igual que Penélope y Odiseo, compartimos una vida de amor juntos. Vos y Máximo —mi Telémaco, que al igual que en la historia era solo un bebé cuando esta odisea empezó— son mi motor, el hilo con el que hacemos fuerte nuestra Ítaca: nuestro hogar de calor, seguridad y felicidad.
 <br>
 <br>
-### contacto
+### contacto.
 <p align="center">
   Do you want to connect with me or learn more about my projects on Google Cloud? <br>
   <a href="https://www.linkedin.com/in/ulises-acu%C3%B1a-bianchi-6a36961b4/" target="_blank" rel="noopener noreferrer">
