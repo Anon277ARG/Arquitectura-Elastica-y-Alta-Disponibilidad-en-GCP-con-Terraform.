@@ -27,7 +27,7 @@ Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratori
 
 ## Índice
 1. [Diagrama de arquitectura visual](#diagrama-de-arquitectura-visual)
-2. [Stack tecnologico y Decisiones de Diseño](#stack-tecnologico-y-decisiones-de-diseño)
+2. [Stack tecnologico](#stack-tecnologico)
 3. [Requisitos](#requisitos)
 4. [Despliegue](#despliegue)
 5. [Comportamiento Esperado del Sistema](#comportamiento-esperado-del-sistema)
@@ -58,31 +58,32 @@ Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratori
 - Seguridad Zero-Trust: Identity-Aware Proxy (IAP)
 - Capa de Aplicación: Debian 11, Bash (Startup Scripts), Python 3, FastAPI, Uvicorn, Stress
 
-## requisitos.
+## Requisitos.
 - **cuenta de Google Cloud Computing GCP** - un proyecto de GCP creado y activo, cuenta de facturacion (Billing) vinculada al proyecto.
 - **APIs Habilitadas** - la api de compute engine habilitada en el proyecto.
 - **Herramientas de línea de comandos (CLI) y terraform** - terraform instalado en tu entorno local, Gcloud instalado y autenticado.
 - **Permisos de IAM** - tener los permisos en GCP para crear redes y máquinas virtuales.
 
-## despliegue.
-1. Clonar el repositorio: git clone [https://github.com/tu-usuario/tu-repo.git](https://github.com/Anon277ARG/Arquitectura-Elastica-y-Alta-Disponibilidad-en-GCP-con-Terraform.).
+## Despliegue.
+1. Clonar el repositorio: git clone [https://github.com/Anon277ARG/Arquitectura-Elastica-y-Alta-Disponibilidad-en-GCP-con-Terraform.](https://github.com/Anon277ARG/Arquitectura-Elastica-y-Alta-Disponibilidad-en-GCP-con-Terraform.).
 2. Autenticar en gcp: gcloud auth application-default login.
 3. Configurar el proyecto: gcloud config set project cloud-lab-493.
 4. Iniciar Terraform: terraform init.
 5. Verificar los cambios antes de aplicar: terraform plan.
 6. PASO OPCIONAL, este paso solo es importante si estamos en un entorno Windows, en caso contrario se puede saltear ```(Get-Content main.tf -Raw) -replace "`r`n", "`n" | Set-Content main.tf -NoNewline ``` para asegurarnos que no hayan incompatibilidades entre el entorno windows y el linux de gcp.
 7. Aplicar la infraestructura: terraform apply.
-8. Una vez obtenida la IP, abrí `http://<ip>` en el navegador. Durante los primeros 5 minutos la arquitectura no va a responder, ese comportamiento está documentado en la sección de operaciones.
-9. Destruir el entorno cuando termine: terraform destroy.
+8. la terminal deberia devolvernos una IP.
+9. Una vez obtenida la IP, abrí `http://(0.0.0.0/0 ip proporcionada por terminal)` en el navegador. Durante los primeros 5 minutos la arquitectura no va a responder, ese comportamiento está documentado en la sección de operaciones.
+10. Destruir el entorno cuando termine: terraform destroy.
 
 ### Comportamiento Esperado del Sistema.
 Esta sección describe el ciclo de vida completo de la arquitectura desde el momento del despliegue hasta el scale-down final. Cada comportamiento descripto es intencional y responde a decisiones de diseño documentadas en la sección de componentes.
 
 ### Resumen de tiempos del ciclo de vida.
 - **0 - 5 min** — Terraform apply completo, infraestructura creada.
-- **5 min** — IP del balanceador sin respuesta, comportamiento esperado.
-- **~5 min** — Primera instancia en buen estado, IP comienza a responder.
-- **~5 min** — Script de estrés activa CPU al 100%.
+- **0 - 5 min** — IP del balanceador sin respuesta, comportamiento esperado.
+- **3 - 5 min** — Primera instancia en buen estado, IP comienza a responder.
+- **5 min** — Script de estrés activa CPU al 100%.
 - **~6 – 7 min** — Autoscaler detecta la carga y escala a 6 instancias.
 - **~10 – 11 min** — 6 instancias en buen estado, balanceo activo entre todos los nodos.
 - **~21 min** — Proceso de estrés finaliza, CPU cae.
@@ -91,22 +92,12 @@ Esta sección describe el ciclo de vida completo de la arquitectura desde el mom
 
 ### Fase 1 — Despliegue (0 – 3 min).
 <br>
-terraform apply crea los 16 recursos en GCP en orden según el grafo de dependencias.
-El MIG levanta una única instancia (min_replicas = 1) en una de las zonas configuradas.
-La VM inicia el startup script: actualiza repositorios, instala Python, FastAPI y la herramienta stress.
-Durante esta fase la CPU de la e2-micro sube naturalmente al 100% por la instalación de dependencias.
-La IP del balanceador no responde. Este es el comportamiento esperado.
+Terraform despliega los 16 recursos según sus dependencias. El MIG crea la instancia inicial, que ejecuta el startup script e instala las dependencias necesarias. Durante esta etapa la CPU puede alcanzar el 100% y la IP del balanceador permanecer inaccesible hasta que la instancia supere los health checks, comportamiento esperado del sistema.
 
 
 #### Fase 2 — Inicialización y tiempos de gracia (3 – 5 min).
 <br>
-El startup script finaliza la instalación y levanta Uvicorn en el puerto 8080 con &.
-El proceso estresar.sh se lanza con nohup y entra en sleep 300, esperando en segundo plano.
-El health check comienza a evaluar la instancia cada 10 segundos en la ruta GET /health.
-El initial_delay_sec = 300 del MIG protege la instancia durante este período, evitando que sea marcada como unhealthy antes de estar lista.
-El cooldown_period = 180 del autoscaler ignora los picos de CPU de esta fase, evitando réplicas prematuras.
-Al cabo de aproximadamente 5 minutos la instancia pasa el health check y queda en buen estado.
-La IP del balanceador comienza a responder. Navegando a http://<ip> se obtiene la siguiente respuesta:
+Finalizada la instalación, Uvicorn queda ejecutándose en el puerto 8080 y el proceso de carga se inicia en segundo plano. Mientras tanto, los health checks comienzan a validar la instancia, protegida por el initial_delay_sec del MIG y el cooldown_period del autoscaler, evitando reemplazos o escalados prematuros durante el arranque. Tras aproximadamente cinco minutos, la instancia supera los health checks y pasa a estado saludable, momento en el que la IP del balanceador comienza a responder correctamente
   
 ```
   "mensaje": "Instancia activa recibiendo trafico",
@@ -116,32 +107,16 @@ La IP del balanceador comienza a responder. Navegando a http://<ip> se obtiene l
 
 #### Fase 3 — Estrés y autoescalado horizontal (5 – 11 min).
 <br>
-El sleep 300 del script de estrés termina y stress --cpu $(nproc) ejecuta, llevando la CPU al 100%.
-El autoscaler detecta que el uso de CPU supera el umbral configurado (80%) y toma la decisión de escalar.
-El MIG crea 5 réplicas adicionales hasta alcanzar el máximo configurado (max_replicas = 6).
-Las 5 nuevas instancias repiten el ciclo de la Fase 1 y Fase 2 de forma simultánea.
-Durante este período las nuevas instancias están en mal estado en el health check, comportamiento esperado mientras completan su inicialización.
-Al cabo de aproximadamente 10 – 11 minutos desde el deploy inicial, las 6 instancias están en buen estado.
-Refrescando repetidamente http://<ip> en el navegador, el campo máquina cambia entre los hostnames de las 6 instancias, demostrando que el balanceador distribuye el tráfico entre todos los nodos activos.
-
+Una vez finalizado el período de espera, el generador de carga eleva la utilización de CPU al 100%, superando el umbral configurado para el autoscaler. Como respuesta, el MIG escala horizontalmente hasta alcanzar las 6 instancias permitidas. Las nuevas réplicas atraviesan su propio proceso de inicialización y validación, por lo que temporalmente aparecen como no saludables en los health checks. Tras completar este ciclo, todas las instancias quedan operativas y el balanceador comienza a distribuir tráfico entre ellas, lo que puede verificarse observando el cambio de hostname en las respuestas al refrescar repetidamente la aplicación.
 
 #### Fase 4 — Estabilización y scale-down (21 – 30 min).
 <br>
-El proceso stress finaliza tras el timeout configurado de 960 segundos (~16 minutos desde que arrancó).
-El uso de CPU cae en todas las instancias por debajo del umbral del 80%.
-El autoscaler detecta que la carga no justifica mantener 6 réplicas e inicia el scale-down gradual.
-El MIG termina las instancias excedentes respetando el cooldown_period, asegurando que no haya interrupciones de servicio durante la reducción.
-El sistema regresa a 1 instancia activa (min_replicas = 1).
-La IP del balanceador sigue respondiendo durante todo el proceso de scale-down.
+Finalizada la carga artificial, la utilización de CPU cae por debajo del umbral configurado y el autoscaler inicia el proceso de scale-down. El MIG elimina gradualmente las instancias excedentes respetando los períodos de estabilización definidos, hasta regresar al mínimo operativo de una instancia. Durante toda la reducción de capacidad, el balanceador continúa atendiendo solicitudes sin interrupciones.
 
 
 #### Fase 5 — Destrucción del entorno.
 <br>
-Ejecutar terraform destroy en la terminal.
-Terraform destruye los recursos en orden inverso al grafo de dependencias.
-El MIG termina todas las instancias activas antes de poder eliminarse. Este proceso puede tomar entre 5 y 15 minutos dependiendo de cuántas instancias estén corriendo.
-No interrumpir el proceso. Ejecutar Ctrl+C desincroniza el state de Terraform con GCP.
-Al finalizar, la terminal confirma la destrucción completa:
+La ejecución de terraform destroy elimina la infraestructura respetando el orden inverso de dependencias definido por Terraform. Previamente, el MIG finaliza todas las instancias activas, proceso que puede extenderse varios minutos según la cantidad de réplicas existentes. Es importante no interrumpir la operación para evitar inconsistencias entre el estado de Terraform y los recursos presentes en GCP. Una vez completado el proceso, la terminal confirma la destrucción total de la infraestructura.
 
 Destroy complete! Resources: 16 destroyed.
 
@@ -355,7 +330,6 @@ Una vez finalizadas las pruebas, se recomienda eliminar todos los recursos cread
 
 ## Componentes.
 
-**aca se puede leer una descripcion detallada de los componentes uno a uno
 <details>
 <summary>A continuación, una descripción detallada de cada componente de la arquitectura.</summary>
 
@@ -412,7 +386,7 @@ resource "google_compute_router" "itaca_router" {
 
 ```terraform
 resource "google_compute_router_nat" "itaca_nat" {
-  name                               = "intaca-mig-updatenat"
+  name                               = "intaca-mig-updatenat" #<--- si es un typo y si bien no deberia afectar no lo voy a cambiar por que funcion
   router                             = google_compute_router.itaca_router.name
   region                             = var.region
   nat_ip_allocate_option             = "AUTO_ONLY"
@@ -427,9 +401,9 @@ resource "google_compute_router_nat" "itaca_nat" {
 
 ### Firewall.
 - reglas de firewall con el nombre "itaca-firewall, itaca-health-check, allow-ssh-itaca" 
-- todas las reglas con el mismo tag para evitar confuciones "itaca-firewalls"
+- todas las reglas con el mismo tag para evitar confusiones "itaca-firewalls"
 #### abiertos los puertos y las ips.
-- "22 y 35.235.240.0/20" para la conexions ssh
+- "22 y 35.235.240.0/20" para la conexión SSH
 - "8080 y 10.129.0.0/23" para la conexion del proxy con el load balancer
 - "8080 y 35.191.0.0/16, 130.211.0.0/22" para los health check
 #### codigo de itaca-firewall.
@@ -827,7 +801,7 @@ resource "google_compute_forwarding_rule" "itaca-forwarding-rule" {
 Terraform infiere dependencias automáticamente solo cuando hay referencias directas entre recursos. Cuando la dependencia es implícita (dos recursos que GCP relaciona internamente pero que no están referenciados entre sí en el código), hay que declararla explícitamente con depends_on. Esto aplica especialmente al orden de destrucción.
 
 --- 
-### colofon el por que de itaca Itaca.
+### Colofón: por qué Ítaca.
 Durante el documento se lee el nombre "Ítaca". Ítaca hace alusión al hogar del protagonista de la Ilíada de Homero, Odiseo (Ὀδυσσεύς en griego), rey de Ítaca, donde su amada esposa Penélope (Πηνελόπεια) junto a su hijo Telémaco (Τηλέμαχος) lo esperaban ansiosamente día a día. Los romanos, como es sabido en la historia, tomaron mucho de la cultura griega y lo adaptaron: Odiseo se volvió Ulises, Penélope se volvió Penelopea y Telémaco se volvió Telemachus. Todos conocemos la historia de la Ilíada, pero eso no es lo importante.
 
 Lo importante de esto es el origen etimológico de la palabra Penélope. Aunque se discute, se cree que "Pene" viene de "hilo, tejido, trama". Por otro lado, Florencia viene del latín, de alguna parte del centro de Italia, y significa "florida", "en flor" o "aquella que da frutos y florece". Esto es importante porque, al igual que Penélope y Odiseo, compartimos una vida de amor juntos. Vos y Máximo —mi Telémaco, que al igual que en la historia era solo un bebé cuando esta odisea empezó— son mi motor, el hilo con el que hacemos fuerte nuestra Ítaca: nuestro hogar de calor, seguridad y felicidad.
