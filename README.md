@@ -49,7 +49,7 @@ Este proyecto representa la Fase 1 (Stateless) de una arquitectura de laboratori
   <em>"Arquitectura stateless — Fase 1. El componente Cloud SQL representa la capa de persistencia planificada para la Fase 2."</em>
 </p>
 
-## Stack tecnologico y Decisiones de Diseño.
+## Stack tecnologico.
 - Infraestructura como Código: Terraform
 - Proveedor Cloud: Google Cloud Platform (GCP)
 - Cómputo Elástico: Compute Engine (e2-micro), Regional Managed Instance Group (MIG)
