@@ -1,54 +1,44 @@
-provider "google" {#<-- Provider configuration for Google Cloud
-  project = "cloud-lab-493"
-  region  = "southamerica-west1"
-}
-
-variable "region" {#<-- Variable for region configuration
-    type = string
-    default = "southamerica-west1"
-}    
-
-resource "google_compute_network" "itaca_network" {#<-- Network configuration
-    name = "itaca-network"
-    routing_mode = "GLOBAL"
-    auto_create_subnetworks = false
+resource "google_compute_network" "itaca_network" { #<-- Network configuration
+  name                    = "itaca-network"
+  routing_mode            = "GLOBAL"
+  auto_create_subnetworks = false
 }
 # Create a subnetwork for the instances to ensure they are in a private IP range ---------------------------------------------
 resource "google_compute_subnetwork" "itaca_subnet" {
-    name = "itaca-subnetwork"
-    region = var.region
-    ip_cidr_range = "10.0.0.0/24"
-    network = google_compute_network.itaca_network.id
-    private_ip_google_access = true
+  name                     = "itaca-subnetwork"
+  region                   = var.region
+  ip_cidr_range            = "10.0.0.0/24"
+  network                  = google_compute_network.itaca_network.id
+  private_ip_google_access = true
 }
 # Create a subnetwork specifically for the proxy to ensure it is in a different IP range than the instances --------------------------------
 resource "google_compute_subnetwork" "itaca_proxy" {
-    name = "itaca-subnetwork-proxy"
-    region = var.region
-    ip_cidr_range = "10.129.0.0/23"
-    network = google_compute_network.itaca_network.id
-    purpose = "REGIONAL_MANAGED_PROXY"
-    role = "ACTIVE"
+  name          = "itaca-subnetwork-proxy"
+  region        = var.region
+  ip_cidr_range = "10.129.0.0/23"
+  network       = google_compute_network.itaca_network.id
+  purpose       = "REGIONAL_MANAGED_PROXY"
+  role          = "ACTIVE"
 }
 # Create a Cloud Router to manage the NAT configuration for the private subnet ------------------------------------------------
 resource "google_compute_router" "itaca_router" {
-    name = "itaca-router"
-    region = var.region
-    network = google_compute_network.itaca_network.id
+  name    = "itaca-router"
+  region  = var.region
+  network = google_compute_network.itaca_network.id
 
 }
 # Create a Cloud NAT configuration for the router to allow instances in the private subnet to access the internet ----------------
 resource "google_compute_router_nat" "itaca_nat" {
-name = "intaca-mig-updatenat"
-router = google_compute_router.itaca_router.name
-region = var.region
-nat_ip_allocate_option = "AUTO_ONLY"
-source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+  name                               = "intaca-mig-updatenat"
+  router                             = google_compute_router.itaca_router.name
+  region                             = var.region
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
 
-    log_config {
+  log_config {
     enable = true
     filter = "ALL"
-    }
+  }
 }
 # Firewall rule to allow health check traffic from Google's health check IP ranges ------------------------------------------------
 resource "google_compute_firewall" "itaca_health_check" {
@@ -80,8 +70,8 @@ resource "google_compute_firewall" "itaca_firewall" {
 }
 # Firewall rule to allow SSH access from the specified IP range ---------------------------------------------------------------
 resource "google_compute_firewall" "allow_ssh_itaca" {
-  name        = "allow-ssh-itaca"
-  network     = google_compute_network.itaca_network.name
+  name    = "allow-ssh-itaca"
+  network = google_compute_network.itaca_network.name
 
   allow {
     protocol = "tcp"
@@ -96,7 +86,7 @@ resource "google_compute_firewall" "allow_ssh_itaca" {
 resource "google_compute_region_health_check" "itaca_check" {
   name        = "health-check-itaca"
   description = "Health check via https"
-  region = var.region
+  region      = var.region
 
   timeout_sec         = 5
   check_interval_sec  = 10
@@ -104,7 +94,7 @@ resource "google_compute_region_health_check" "itaca_check" {
   unhealthy_threshold = 3
 
   http_health_check {
-    port = "8080"
+    port         = "8080"
     request_path = "/health" # La ruta del FastAPI
   }
 }
@@ -120,7 +110,7 @@ resource "google_compute_instance_template" "mig_template" {
   }
 
   instance_description = "description assigned to instances"
-  machine_type         = "e2-micro"
+  machine_type         = var.machine_type
   can_ip_forward       = false
 
   scheduling {
@@ -128,12 +118,12 @@ resource "google_compute_instance_template" "mig_template" {
     on_host_maintenance = "MIGRATE"
   }
   disk {
-    source_image      = "debian-cloud/debian-11"
-    auto_delete       = true
-    boot              = true
+    source_image = "debian-cloud/debian-11"
+    auto_delete  = true
+    boot         = true
   }
   network_interface {
-    network = google_compute_network.itaca_network.id
+    network    = google_compute_network.itaca_network.id
     subnetwork = google_compute_subnetwork.itaca_subnet.id
   }
 
@@ -174,73 +164,78 @@ BASH_EOF
   }
 }
 # Create a managed instance group with the instance template ---------------------------------------------------------------
-resource "google_compute_region_instance_group_manager" "mig" { 
- name = "itaca-mig"
- base_instance_name = "itaca-vm-"
- region = var.region
- version {
-   instance_template = google_compute_instance_template.mig_template.id
- }
- named_port {
+resource "google_compute_region_instance_group_manager" "mig" {
+  name               = "itaca-mig"
+  base_instance_name = "itaca-vm-"
+  region             = var.region
+  version {
+    instance_template = google_compute_instance_template.mig_template.id
+  }
+  named_port {
     name = "http"
     port = 8080
   }
- distribution_policy_zones = [
-   "${var.region}-a",
-   "${var.region}-b",
- ]
- auto_healing_policies {
-   health_check = google_compute_region_health_check.itaca_check.id
-   initial_delay_sec = 300
- }
+  distribution_policy_zones = [
+    "${var.region}-a",
+    "${var.region}-b",
+  ]
+  auto_healing_policies {
+    health_check      = google_compute_region_health_check.itaca_check.id
+    initial_delay_sec = 300
+  }
 }
 # Create an autoscaler for the managed instance group ---------------------------------------------------------------------
 resource "google_compute_region_autoscaler" "itaca_autoscaler" { #<---autoscaler
- name = "autoscaler-itaca"
- region = var.region
- target = google_compute_region_instance_group_manager.mig.id
- autoscaling_policy {
-   min_replicas = 1
-   max_replicas = 6
-   cooldown_period = 180
-   cpu_utilization {
-     target = 0.8
-   }
- }
+  name   = "autoscaler-itaca"
+  region = var.region
+  target = google_compute_region_instance_group_manager.mig.id
+  autoscaling_policy {
+    min_replicas    = var.min_replicas
+    max_replicas    = var.max_replicas
+    cooldown_period = 180
+    cpu_utilization {
+      target = 0.8
+    }
+  }
 }
 # Create a backend service and associate it with the managed instance group ------------------------------------------------
 resource "google_compute_region_backend_service" "itaca_backend" { #<--- backend service
-  name = "itaca-backend-service"
-  region = var.region
-  protocol = "HTTP"
+  name                  = "itaca-backend-service"
+  region                = var.region
+  protocol              = "HTTP"
   load_balancing_scheme = "EXTERNAL_MANAGED"
-  health_checks = [google_compute_region_health_check.itaca_check.id]
+  health_checks         = [google_compute_region_health_check.itaca_check.id]
   backend {
-    group = google_compute_region_instance_group_manager.mig.instance_group
-    balancing_mode = "UTILIZATION"
+    group           = google_compute_region_instance_group_manager.mig.instance_group
+    balancing_mode  = "UTILIZATION"
     capacity_scaler = 1.0
   }
 }
 # Create a URL map, target HTTP proxy, and forwarding rule to route traffic to the backend service -------------------------
 resource "google_compute_region_url_map" "itaca_url_map" { #<--- url map
-  name = "itaca-url-map"
-  region = var.region
+  name            = "itaca-url-map"
+  region          = var.region
   default_service = google_compute_region_backend_service.itaca_backend.id
-} 
+}
 # Create a target HTTP proxy and forwarding rule to route traffic to the backend service -----------------------------------
 resource "google_compute_region_target_http_proxy" "itaca_target_proxy" { #<--- target http proxy
-  name = "itaca-target-proxy"
-  region = var.region
+  name    = "itaca-target-proxy"
+  region  = var.region
   url_map = google_compute_region_url_map.itaca_url_map.id
 }
 # Create a forwarding rule to route traffic to the target HTTP proxy ------------------------------------------------------
-resource "google_compute_forwarding_rule" "itaca-forwarding-rule" { 
-  name = "itaca-forwarding-rule"
-  region = var.region 
-  target = google_compute_region_target_http_proxy.itaca_target_proxy.id
-  port_range = "80"
+resource "google_compute_forwarding_rule" "itaca-forwarding-rule" {
+  name                  = "itaca-forwarding-rule"
+  region                = var.region
+  target                = google_compute_region_target_http_proxy.itaca_target_proxy.id
+  port_range            = "80"
   load_balancing_scheme = "EXTERNAL_MANAGED"
-  network = google_compute_network.itaca_network.id
+  network               = google_compute_network.itaca_network.id
+  # GCP usa esta proxy-only subnet implícitamente para el balanceador regional.
+  # La dependencia explícita garantiza que el forwarding rule se elimine primero.
+   depends_on = [
+     google_compute_subnetwork.itaca_proxy
+   ]
 
 }
 # Output the IP address of the load balancer to access the application ------------------------------------------------------
